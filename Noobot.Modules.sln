@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2002
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noobot.Modules.LoadBalancerDotOrg", "src\Noobot.Modules.LoadBalancerDotOrg\Noobot.Modules.LoadBalancerDotOrg.csproj", "{D865E993-6A8F-415A-A58F-E7D986C8FBCF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noobot.Modules.NewRelic", "src\Noobot.Modules.NewRelic\Noobot.Modules.NewRelic.csproj", "{4BB70C1F-C434-443A-90E1-795CEEB47B22}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noobot.Modules.Dns", "src\Noobot.Modules.Dns\Noobot.Modules.Dns.csproj", "{67F828FF-F81C-4C01-AA50-7132EF1A74DB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D865E993-6A8F-415A-A58F-E7D986C8FBCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D865E993-6A8F-415A-A58F-E7D986C8FBCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D865E993-6A8F-415A-A58F-E7D986C8FBCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D865E993-6A8F-415A-A58F-E7D986C8FBCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BB70C1F-C434-443A-90E1-795CEEB47B22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BB70C1F-C434-443A-90E1-795CEEB47B22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BB70C1F-C434-443A-90E1-795CEEB47B22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BB70C1F-C434-443A-90E1-795CEEB47B22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67F828FF-F81C-4C01-AA50-7132EF1A74DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67F828FF-F81C-4C01-AA50-7132EF1A74DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67F828FF-F81C-4C01-AA50-7132EF1A74DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67F828FF-F81C-4C01-AA50-7132EF1A74DB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {62923E12-D8BB-4BAD-B83B-9C9AFFC4466A}
+	EndGlobalSection
+EndGlobal
