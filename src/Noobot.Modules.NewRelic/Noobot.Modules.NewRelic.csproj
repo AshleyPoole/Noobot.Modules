@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NewRelic.RestApi" Version="2.0.0-beta2" />
+    <PackageReference Include="Noobot.Core" Version="3.1.42" />
+    <PackageReference Include="PortableRest" Version="4.0.0-alpha1" />
+  </ItemGroup>
+
+</Project>
