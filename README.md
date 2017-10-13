@@ -7,6 +7,5 @@ Allows listing of applications on configured NewRelic account, getting health su
 ## LoadBalancer.Org Module
 Allows editing of a RIP on the load balancer, changing it's state using the `drain`, `halt` and `online` commands.
 
-\
 ## DNS Module
 Allows simply DNS resolution using the systems configured DNS servers.
