@@ -1,11 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netcoreapp2.0</TargetFramework>
+		<PackageId>Noobot.Modules.LoadBalancerDotOrg</PackageId>
+		<PackageVersion>1.0.0</PackageVersion>
+		<Authors>Ashley Poole</Authors>
+		<Description>LoadBalancer.Org module for Noobot framework</Description>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageReleaseNotes>First release of the LoadBalancer.org module for Noobot framework that supporting using the drain, halt and online commands against a VIP.</PackageReleaseNotes>
+		<PackageTags>Noobot Noobot.Modules LoadBalancer.Org LoadBalancer chatops chatbot bot</PackageTags>
+		<PackageProjectUrl>https://github.com/AshleyPoole/Noobot.Modules</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/AshleyPoole/Noobot.Modules</RepositoryUrl>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Noobot.Core" Version="3.1.42" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DocumentationFile>bin\Release\netcoreapp2.0\Noobot.Modules.LoadBalancerDotOrg.xml</DocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Noobot.Core" Version="3.1.42" />
+	</ItemGroup>
 
 </Project>

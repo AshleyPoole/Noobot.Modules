@@ -1,11 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netcoreapp2.0</TargetFramework>
+		<PackageId>Noobot.Modules.DNS</PackageId>
+		<PackageVersion>1.0.0</PackageVersion>
+		<Authors>Ashley Poole</Authors>
+		<Description>DNS module for Noobot framework</Description>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageReleaseNotes>First release of a simple DNS lookup to get the IP address of a host entries using the configured system DNS server.</PackageReleaseNotes>
+		<PackageTags>Noobot Noobot.Modules DNS chatops chatbot bot</PackageTags>
+		<PackageProjectUrl>https://github.com/AshleyPoole/Noobot.Modules</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/AshleyPoole/Noobot.Modules</RepositoryUrl>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Noobot.Core" Version="3.1.42" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DocumentationFile>bin\Release\netcoreapp2.0\Noobot.Modules.Dns.xml</DocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Noobot.Core" Version="3.1.42" />
+	</ItemGroup>
 
 </Project>
