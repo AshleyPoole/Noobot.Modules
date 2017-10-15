@@ -32,12 +32,12 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 		{
 		}
 
-		public static bool CommandWellFormatted(string message)
+		internal static bool CommandWellFormatted(string message)
 		{
 			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length == 5;
 		}
 
-		public LoadBalanacerAppliance GetAppliance(string applianceName)
+		internal LoadBalanacerAppliance GetAppliance(string applianceName)
 		{
 			try
 			{
@@ -52,15 +52,15 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 			}
 		}
 
-		public bool TrustAllCerts => this.configReader.GetConfigEntry<bool>($"{Configuration.Prefix}:trustAllCerts");
+		internal bool TrustAllCerts => this.configReader.GetConfigEntry<bool>($"{Configuration.Prefix}:trustAllCerts");
 
-		public AuthenticationHeaderValue GetAuthHeader(LoadBalanacerAppliance appliance)
+		internal AuthenticationHeaderValue GetAuthHeader(LoadBalanacerAppliance appliance)
 		{
 			var bytes = Encoding.ASCII.GetBytes($"{appliance.Username}:{appliance.Password}");
 			return new AuthenticationHeaderValue("Basic", Convert.ToBase64String(bytes));
 		}
 
-		public StringContent GetRequestContent(LoadBalanacerAppliance applaince, LoadBalancerRequest request)
+		internal StringContent GetRequestContent(LoadBalanacerAppliance applaince, LoadBalancerRequest request)
 		{
 			var apiRequest = new ApiRequest(applaince.ApiKey, request.Command, request.Vip, request.Rip);
 			return new StringContent(JsonConvert.SerializeObject(apiRequest), Encoding.UTF8);
