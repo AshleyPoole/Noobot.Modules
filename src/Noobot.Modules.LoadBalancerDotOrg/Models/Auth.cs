@@ -1,7 +1,10 @@
-﻿namespace Noobot.Modules.LoadBalancerDotOrg.Models
+﻿using Newtonsoft.Json;
+
+namespace Noobot.Modules.LoadBalancerDotOrg.Models
 {
 	internal class Auth
 	{
-		public string apikey { get; set; }
+		[JsonProperty("apiKey")]
+		public string Apikey { get; set; }
 	}
 }

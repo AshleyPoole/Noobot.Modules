@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Noobot.Modules.LoadBalancerDotOrg.Models
 {
@@ -6,15 +7,18 @@ namespace Noobot.Modules.LoadBalancerDotOrg.Models
 	{
 		internal ApiRequest(string apiKey, string command, string vip, string rip)
 		{
-			this.auth = new Auth { apikey = apiKey };
-			this.action = new List<Action> { new Action { command = command } };
-			this.syntax = new List<Syntax> { new Syntax { vip = vip, rip = rip } };
+			this.Auth = new Auth { Apikey = apiKey };
+			this.Action = new List<Action> { new Action { Command = command } };
+			this.Syntax = new List<Syntax> { new Syntax { Vip = vip, Rip = rip } };
 		}
 
-		public Auth auth { get; }
+		[JsonProperty("atuh")]
+		public Auth Auth { get; }
 
-		public List<Action> action { get; }
+		[JsonProperty("action")]
+		public List<Action> Action { get; }
 
-		public List<Syntax> syntax { get; }
+		[JsonProperty("syntax")]
+		public List<Syntax> Syntax { get; }
 	}
 }

@@ -1,9 +1,13 @@
-﻿namespace Noobot.Modules.LoadBalancerDotOrg.Models
+﻿using Newtonsoft.Json;
+
+namespace Noobot.Modules.LoadBalancerDotOrg.Models
 {
 	internal class Syntax
 	{
-		public string vip { get; set; }
+		[JsonProperty("vip")]
+		public string Vip { get; set; }
 
-		public string rip { get; set; }
+		[JsonProperty("rip")]
+		public string Rip { get; set; }
 	}
 }

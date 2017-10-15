@@ -1,7 +1,10 @@
-﻿namespace Noobot.Modules.LoadBalancerDotOrg.Models
+﻿using Newtonsoft.Json;
+
+namespace Noobot.Modules.LoadBalancerDotOrg.Models
 {
 	internal class Action
 	{
-		public string command { get; set; }
+		[JsonProperty("command")]
+		public string Command { get; set; }
 	}
 }
