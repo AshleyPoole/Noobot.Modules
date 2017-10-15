@@ -13,14 +13,11 @@ namespace Noobot.Modules.NewRelic
 	{
 		private readonly IConfigReader configReader;
 
-		private readonly ILog log;
-
 		private string apiKey;
 
-		public NewRelicPlugin(IConfigReader configReader, ILog log)
+		public NewRelicPlugin(IConfigReader configReader)
 		{
 			this.configReader = configReader;
-			this.log = log;
 		}
 
 		public void Start()
@@ -32,17 +29,17 @@ namespace Noobot.Modules.NewRelic
 		{
 		}
 
-		public NewRelicRestClient GetNewRelicClient()
+		internal NewRelicRestClient GetNewRelicClient()
 		{
 			return new NewRelicRestClient(this.apiKey);
 		}
 
-		public static bool ApplicationTargetedCommandWellFormatted(string message)
+		internal static bool ApplicationTargetedCommandWellFormatted(string message)
 		{
 			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length == 4;
 		}
 
-		public int GetAccountIdFromApplicationTargeted(string message)
+		internal int GetAccountIdFromApplicationTargeted(string message)
 		{
 			var accountId = message.Split(" ", StringSplitOptions.RemoveEmptyEntries)[3];
 			return int.Parse(accountId);

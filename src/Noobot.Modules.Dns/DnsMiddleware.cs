@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using Common.Logging;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
@@ -11,11 +12,14 @@ namespace Noobot.Modules.Dns
 {
 	public class DnsMiddleware : MiddlewareBase
 	{
+		private readonly ILog log;
+
 		private const string Lookup = "lookup";
 
-		public DnsMiddleware(IMiddleware next)
+		public DnsMiddleware(IMiddleware next, ILog log)
 			: base(next)
 		{
+			this.log = log;
 			this.HandlerMappings = new[]
 									{
 										new HandlerMapping
@@ -49,7 +53,7 @@ namespace Noobot.Modules.Dns
 			catch (Exception e)
 			{
 				errorDuringLookup = true;
-				Console.WriteLine(e);
+				this.log.Error(e);
 			}
 
 			if (errorDuringLookup || ipAddresses == null)
@@ -74,10 +78,10 @@ namespace Noobot.Modules.Dns
 		private static string GetHostFromMessage(string messageText)
 		{
 			var hostText = messageText.Split(" ", StringSplitOptions.RemoveEmptyEntries)[2];
-			return hostText.Contains("|") ? hostText.Substring(hostText.IndexOf("|", StringComparison.Ordinal) + 1).Replace(">", String.Empty) : messageText;
+			return hostText.Contains("|") ? hostText.Substring(hostText.IndexOf("|", StringComparison.Ordinal) + 1).Replace(">", string.Empty) : messageText;
 		}
 
-		public static string GetIpAddressesAsText(IPAddress[] ipAddresses)
+		private static string GetIpAddressesAsText(IEnumerable<IPAddress> ipAddresses)
 		{
 			var ipAddressesMessage = string.Empty;
 

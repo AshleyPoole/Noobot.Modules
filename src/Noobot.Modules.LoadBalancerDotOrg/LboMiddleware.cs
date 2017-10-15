@@ -102,7 +102,7 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 					}
 					catch (Exception e)
 					{
-						Console.WriteLine(e);
+						this.log.Error(e);
 						exception = e;
 					}
 				}
