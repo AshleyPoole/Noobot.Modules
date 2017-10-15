@@ -1,6 +1,6 @@
 ﻿namespace Noobot.Modules.LoadBalancerDotOrg.Models
 {
-	public class Action
+	internal class Action
 	{
 		public string command { get; set; }
 	}

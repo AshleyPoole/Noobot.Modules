@@ -1,6 +1,6 @@
 ﻿namespace Noobot.Modules.LoadBalancerDotOrg
 {
-	public static class LoadBalancerActions
+	internal static class LoadBalancerActions
 	{
 		public static string Drain = "drain";
 

@@ -2,9 +2,9 @@
 
 namespace Noobot.Modules.LoadBalancerDotOrg.Models
 {
-	public class ApiRequest
+	internal class ApiRequest
 	{
-		public ApiRequest(string apiKey, string command, string vip, string rip)
+		internal ApiRequest(string apiKey, string command, string vip, string rip)
 		{
 			this.auth = new Auth { apikey = apiKey };
 			this.action = new List<Action> { new Action { command = command } };

@@ -1,6 +1,6 @@
 ﻿namespace Noobot.Modules.LoadBalancerDotOrg.Models
 {
-	public class LoadBalanacerAppliance
+	internal class LoadBalanacerAppliance
 	{
 		public string Name;
 

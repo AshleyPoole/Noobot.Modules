@@ -2,9 +2,9 @@
 
 namespace Noobot.Modules.LoadBalancerDotOrg.Models
 {
-	public class LoadBalancerRequest
+	internal class LoadBalancerRequest
 	{
-		public LoadBalancerRequest(string message)
+		internal LoadBalancerRequest(string message)
 		{
 			var messageParts = message.Split(" ", StringSplitOptions.RemoveEmptyEntries);
 

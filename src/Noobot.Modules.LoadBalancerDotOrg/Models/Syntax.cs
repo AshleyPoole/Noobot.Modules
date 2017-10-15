@@ -1,6 +1,6 @@
 ﻿namespace Noobot.Modules.LoadBalancerDotOrg.Models
 {
-	public class Syntax
+	internal class Syntax
 	{
 		public string vip { get; set; }
 
