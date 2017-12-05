@@ -1,23 +1,21 @@
 ﻿using System;
-using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
+
 using Noobot.Core.Configuration;
 using Noobot.Core.Plugins;
-using SlackAPI;
-using SlackConnector;
 
-namespace Noobot.Modules.NewRelic
+using SlackConnector;
+using SlackConnector.Models;
+
+namespace Noobot.Modules.IncidentManagement
 {
 	public class IncidentManagementPlugin : IPlugin
 	{
 		private readonly IConfigReader configReader;
 
-		public string mainIncidentChannel;
+		public string MainIncidentChannel;
 
-		public string incidentChannelPrefix;
-
-		private string apiKey;
+		private ISlackConnection SlackConnection { get; set; }
 
 		public IncidentManagementPlugin(IConfigReader configReader)
 		{
@@ -26,9 +24,10 @@ namespace Noobot.Modules.NewRelic
 
 		public void Start()
 		{
-			this.apiKey = this.configReader.SlackApiKey;
-			this.mainIncidentChannel = this.configReader.GetConfigEntry<string>("incident:mainchannel");
-			this.incidentChannelPrefix = this.configReader.GetConfigEntry<string>("incident:channelprefix");
+			this.MainIncidentChannel = this.configReader.GetConfigEntry<string>("incident:mainchannel");
+
+			var connector = new SlackConnector.SlackConnector();
+			this.SlackConnection = connector.Connect(this.configReader.SlackApiKey).Result;
 		}
 
 		public void Stop()
@@ -45,25 +44,27 @@ namespace Noobot.Modules.NewRelic
 			return message.Replace(commandPrefix, string.Empty).Trim();
 		}
 
-		internal ISlackConnection GetSlackClient()
+		internal void SendNewIncidentCreatedMessage(string incidentText, string reportedByUser, string incidentChannel)
 		{
-			var connector = new SlackConnector.SlackConnector();
-			return connector.Connect(apiKey).Result;
+			var messageText = $"*NEW INCIDENT DECLARED*\n"
+				+ $"Timestamp: { DateTime.UtcNow } GMT\n"
+				+ $"Reported By: @{reportedByUser }\n"
+				+ $"Channel: { this.GetUserFriendlyChannelName(incidentChannel) }\n"
+				+ $"Description: { incidentText }\n";
+			this.SendIncidentChannelMessage(messageText);
 		}
 
-		internal string GetNewChannelName(string incidentName)
+		private string GetUserFriendlyChannelName(string channel)
 		{
-			var textInfo = new CultureInfo("en-US", false).TextInfo;
-			var cleanedIncidentName = textInfo.ToTitleCase(incidentName).Replace(" ", string.Empty);
-			var date = DateTime.UtcNow.ToString("yyMMdd");
-			var channelName = $"{this.incidentChannelPrefix}-{date}-{cleanedIncidentName}";
-
-			return new string(channelName.Take(21).ToArray());
+			return this.SlackConnection.GetChannels().Result.FirstOrDefault(x => x.Id == channel)?.Name;
 		}
 
-		internal bool ChannelExists(ISlackConnection slackConnection, string channelName)
+		private void SendIncidentChannelMessage(string messageText)
 		{
-			return true;
+			var chatHub = new SlackChatHub { Id = this.MainIncidentChannel };
+			var message = new BotMessage { ChatHub = chatHub, Text = messageText };
+
+			this.SlackConnection.Say(message);
 		}
 	}
 }

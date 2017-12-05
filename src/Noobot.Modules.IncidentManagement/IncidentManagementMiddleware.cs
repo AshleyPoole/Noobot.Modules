@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Common.Logging;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
-using Noobot.Modules.NewRelic;
 
 namespace Noobot.Modules.IncidentManagement
 {
@@ -58,31 +56,23 @@ namespace Noobot.Modules.IncidentManagement
 				yield return incomingMessage.ReplyToChannel($"Please provide incident title. Help: {this.newIncidentHelpText}");
 			}
 
+			if (incomingMessage.Channel == this.incidentManagementPlugin.MainIncidentChannel)
+			{
+				yield return incomingMessage.ReplyToChannel($"Sorry, new incidents cannot be declared in this channel as bots are unable to create new channels. Please create a dedicated channel for this incident and declare the incident from there.");
+			}
+
+			if (incomingMessage.ChannelType == ResponseType.DirectMessage)
+			{
+				yield return incomingMessage.ReplyToChannel($"Sorry, new incidents cannot be declared in direct messages. Create a public channel in order to declare incidents... We all want to take part!");
+			}
+
 			var incidentText =
 				this.incidentManagementPlugin.GetIncidentText($"{Configuration.Prefix} new", incomingMessage.TargetedText);
-			var newChannelName = this.incidentManagementPlugin.GetNewChannelName(incidentText);
 
-			var channelCreationFailed = false;
+			this.incidentManagementPlugin.SendNewIncidentCreatedMessage(incidentText, incomingMessage.Username, incomingMessage.Channel);
 
-			try
-			{
-				var client = this.incidentManagementPlugin.GetSlackClient();
-				var channel = client.CreateChannel(newChannelName);
-				var blah = channel.Result;
-			}
-			catch (Exception e)
-			{
-				channelCreationFailed = true;
-			}
-
-			if (channelCreationFailed)
-			{
-				yield return incomingMessage.ReplyToChannel($"Incident creation of new channel {newChannelName} failed. Channel has not been created.");
-				yield break;
-			}
-			
-
-			yield return incomingMessage.ReplyToChannel($"Channel <#{newChannelName}> has been created to track issue '{incidentText}' by <@{incomingMessage.Username}>. Please direct all communication about the issue to the incidents channel.");
+			yield return incomingMessage.ReplyToChannel($"New incident succesfully declared and posted to #{this.incidentManagementPlugin.MainIncidentChannel}... "
+														+ $"Remember to add people to this channel that may be able to help mitigate this incident... Good luck!");
 		}
 
 		private IEnumerable<ResponseMessage> ResolveIncidentHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)

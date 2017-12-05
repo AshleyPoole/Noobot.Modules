@@ -1,5 +1,4 @@
 ﻿using Noobot.Core.Configuration;
-using Noobot.Modules.NewRelic;
 
 namespace Noobot.Modules.IncidentManagement
 {
