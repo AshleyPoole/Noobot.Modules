@@ -32,9 +32,9 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 		{
 		}
 
-		internal static bool CommandWellFormatted(string message)
+		internal bool CommandMisformed(string message)
 		{
-			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length == 5;
+			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length != 5;
 		}
 
 		internal LoadBalanacerAppliance GetAppliance(string applianceName)

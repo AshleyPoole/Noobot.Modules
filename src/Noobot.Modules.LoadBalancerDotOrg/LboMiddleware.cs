@@ -70,7 +70,7 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 
 			incomingMessage.IndicateTypingOnChannel();
 
-			if (!LboPlugin.CommandWellFormatted(incomingMessage.TargetedText))
+			if (this.lboPlugin.CommandMisformed(incomingMessage.TargetedText))
 			{
 				yield return incomingMessage.ReplyToChannel($"Command was not formatted correctly. Help: '{GetHelpText(command)}'");
 				yield break;
