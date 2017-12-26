@@ -96,7 +96,6 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 				{
 					try
 					{
-						
 						client.DefaultRequestHeaders.Authorization = this.lboPlugin.GetAuthHeader(appliance);
 						httpResponse = client.PostAsync(appliance.ApiUrl, this.lboPlugin.GetRequestContent(appliance, lboRequest)).Result;
 					}

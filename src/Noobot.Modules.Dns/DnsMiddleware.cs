@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using Common.Logging;
@@ -12,9 +11,9 @@ namespace Noobot.Modules.Dns
 {
 	public class DnsMiddleware : MiddlewareBase
 	{
-		private readonly ILog log;
-
 		private const string Lookup = "lookup";
+
+		private readonly ILog log;
 
 		public DnsMiddleware(IMiddleware next, ILog log)
 			: base(next)
