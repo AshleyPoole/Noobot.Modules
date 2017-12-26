@@ -30,11 +30,6 @@ namespace Noobot.Modules.NewRelic
 		{
 		}
 
-		internal NewRelicRestClient GetNewRelicClient()
-		{
-			return new NewRelicRestClient(this.apiKey);
-		}
-
 		internal static bool ApplicationTargetedCommandMisformed(string message)
 		{
 			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length != 4;
@@ -124,6 +119,11 @@ namespace Noobot.Modules.NewRelic
 			}
 
 			return $"NewRelic metrics summary for {applicationId}\n{metricsMessage}";
+		}
+
+		private NewRelicRestClient GetNewRelicClient()
+		{
+			return new NewRelicRestClient(this.apiKey);
 		}
 
 		private List<Application> FetchApplications()
