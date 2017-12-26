@@ -2,10 +2,10 @@
 {
 	internal static class LoadBalancerActions
 	{
-		public static string Drain = "drain";
+		public const string Drain = "drain";
 
-		public static string Halt = "halt";
+		public const string Halt = "halt";
 
-		public static string Online = "online";
+		public const string Online = "online";
 	}
 }
