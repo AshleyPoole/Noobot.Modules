@@ -74,7 +74,7 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 			return exception != null || responseMessage == null || !responseMessage.IsSuccessStatusCode;
 		}
 
-		internal static string ParseApiResponse(HttpResponseMessage responseMessage)
+		internal string ParseApiResponse(HttpResponseMessage responseMessage)
 		{
 			var lbResponse = responseMessage.Content.ReadAsStringAsync().Result;
 			return lbResponse.Replace("\n", string.Empty).Replace("LBCLI:", string.Empty);

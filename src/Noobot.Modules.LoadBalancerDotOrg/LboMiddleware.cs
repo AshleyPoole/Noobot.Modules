@@ -101,7 +101,7 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 				yield break;
 			}
 
-			var lbResponse = LboPlugin.ParseApiResponse(apiResponseMessage);
+			var lbResponse = this.lboPlugin.ParseApiResponse(apiResponseMessage);
 
 			if (lbResponse.Contains("Error"))
 			{
