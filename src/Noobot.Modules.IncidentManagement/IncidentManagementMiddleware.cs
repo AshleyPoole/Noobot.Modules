@@ -11,7 +11,7 @@ namespace Noobot.Modules.IncidentManagement
 	{
 		private readonly IncidentManagementPlugin incidentManagementPlugin;
 
-		private readonly string newIncidentHelpText = $"`{Configuration.Prefix} new website is offline`";
+		private readonly string newIncidentHelpText = $"`{Configuration.Prefix} new`";
 
 		private readonly string resolveIncidentHelpText = $"`{Configuration.Prefix} resolve`";
 
