@@ -15,6 +15,9 @@ namespace Noobot.Modules.IncidentManagement.Models
 			this.Title = incidentTitle;
 			this.DeclaredBy = declaredBy;
 			this.DeclaredDateTimeUtc = DateTime.UtcNow;
+
+			this.Resolved = false;
+			this.Closed = false;
 		}
 
 		public Incident()
@@ -31,9 +34,13 @@ namespace Noobot.Modules.IncidentManagement.Models
 
 		public DateTime DeclaredDateTimeUtc { get; set; }
 
+		public bool Resolved { get; set; }
+
 		public string ResolvedBy { get; set; }
 
 		public DateTime? ResolvedDateTimeUtc { get; set; }
+
+		public bool Closed { get; set; }
 
 		public string ClosedBy { get; set; }
 
@@ -45,12 +52,14 @@ namespace Noobot.Modules.IncidentManagement.Models
 		{
 			this.ResolvedDateTimeUtc = DateTime.UtcNow;
 			this.ResolvedBy = resolvedBy;
+			this.Resolved = true;
 		}
 
 		public void MarkAsClosed(string closedBy)
 		{
 			this.ClosedDateTimeUtc = DateTime.UtcNow;
 			this.ClosedBy = closedBy;
+			this.Closed = true;
 		}
 
 		public void SetRowKey(int rowKey)
