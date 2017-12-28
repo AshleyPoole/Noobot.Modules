@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+
 using Common.Logging;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
@@ -31,7 +33,7 @@ namespace Noobot.Modules.IncidentManagement
 										{
 											ValidHandles = StartsWithHandle.For($"{Configuration.Prefix} new"),
 											EvaluatorFunc = this.NewIncidentHandler,
-											Description = $"Declares a new incident and creates a dedicated. '{this.newIncidentHelpText}'",
+											Description = $"Declares a new incident. {this.newIncidentHelpText}",
 											VisibleInHelp = true
 										},
 										new HandlerMapping
@@ -107,8 +109,10 @@ namespace Noobot.Modules.IncidentManagement
 				yield return incomingMessage.ReplyToChannel(
 					"Sorry, no unresolved incident was found attached to this channel. Was the incident already resolved or closed?");
 			}
-
-			yield return incomingMessage.ReplyToChannel($"Incident #{ incident.FriendlyId } succesfully resolved. Please run { this.closeIncidentHelpText } once the incident has been stood down.");
+			else
+			{
+				yield return incomingMessage.ReplyToChannel($"Incident #{ incident.FriendlyId } succesfully resolved. Please run { this.closeIncidentHelpText } once the incident has been stood down.");
+			}
 		}
 
 		private IEnumerable<ResponseMessage> CloseIncidentHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
@@ -121,25 +125,43 @@ namespace Noobot.Modules.IncidentManagement
 			if (incident == null)
 			{
 				yield return incomingMessage.ReplyToChannel(
-					$"Sorry, no incident was found attached to this channel that could be closed. Was the incident resolved yet or already closed? If it the incident hasn't been marked as resolved, run { this.resolveIncidentHelpText } first.");
+					$"Sorry, no incident was found attached to this channel that could be closed. Was the incident resolved yet or already closed? "
+					+ $"If it the incident hasn't been marked as resolved, run { this.resolveIncidentHelpText } first.");
 			}
+			else
+			{
+				yield return incomingMessage.ReplyToChannel($"Incident #{ incident.FriendlyId } succesfully closed. You can now archive the channel and prepare the postmortem on Jive.");
 
-			yield return incomingMessage.ReplyToChannel($"Incident #{ incident.FriendlyId } succesfully closed. You can now archive the channel and prepare the postmortem on Jive.");
+			}
 		}
 
 		private IEnumerable<ResponseMessage> ListActiveIncidentHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
 			incomingMessage.IndicateTypingOnChannel();
 
-			yield return incomingMessage.ReplyToChannel($"Not implemented.");
+			var openIncidentAttachments = this.incidentManagementPlugin.GetOpenIncidents();
+
+			if (openIncidentAttachments.Any())
+			{
+				yield return incomingMessage.ReplyToChannel(
+					$"There are {openIncidentAttachments.Count} incident(s) currently open:",
+					openIncidentAttachments);
+			}
+			else
+			{
+				yield return incomingMessage.ReplyToChannel(
+					$"Great news! There's no active incidents at the moment. If you need to declare a new incident, run { this.newIncidentHelpText }.");
+
+			}
 		}
 
 		private IEnumerable<ResponseMessage> ListRecentIncidentHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
 			incomingMessage.IndicateTypingOnChannel();
 
-			yield return incomingMessage.ReplyToChannel($"Not implemented.");
-		}
+			var recentIncidentAttachments = this.incidentManagementPlugin.GetRecentIncidents();
 
+			yield return incomingMessage.ReplyToChannel($"There were { recentIncidentAttachments.Count } recent incident(s):", recentIncidentAttachments);
+		}
 	}
 }

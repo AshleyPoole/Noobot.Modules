@@ -8,6 +8,7 @@ using Noobot.Modules.IncidentManagement.Models;
 
 using SlackConnector;
 using SlackConnector.Models;
+using Noobot.Core.MessagingPipeline.Response;
 
 namespace Noobot.Modules.IncidentManagement
 {
@@ -61,12 +62,9 @@ namespace Noobot.Modules.IncidentManagement
 			incident = this.storageClient.PersistNewIncident(incident);
 
 			var title = $"INCIDENT DECLARED #{ incident.FriendlyId }";
-			var messageText = $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
-				+ $"Reported By: @{ incident.DeclaredBy }\n"
-				+ $"Channel: { incident.ChannelName }\n"
-				+ $"Description: { incident.Title }\n";
+			var messageText = this.GetUnresolvedIncidentTextWithoutIncidentId(incident);
 
-			this.SendIncidentChannelMessage(title, messageText, "danger");
+			this.SendIncidentChannelMessage(title, messageText, Configuration.UnresolvedIncidentColor);
 
 			return incident;
 		}
@@ -85,13 +83,9 @@ namespace Noobot.Modules.IncidentManagement
 			this.storageClient.UpdateIncident(incident);
 
 			var title = $"INCIDENT RESOLVED #{ incident.FriendlyId }";
-			var messageText = $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
-							+ $"Resolved Timestamp: { incident.ResolvedDateTimeUtc } UTC\n"
-							+ $"Resolved By: @{ incident.ResolvedBy }\n"
-							+ $"Channel: { incident.ChannelName }\n"
-							+ $"Description: { incident.Title }\n";
+			var messageText = this.GetResolvedIncidentTextWithoutIncidentId(incident);
 
-			this.SendIncidentChannelMessage(title, messageText, "good");
+			this.SendIncidentChannelMessage(title, messageText, Configuration.ResolvedIncidentColor);
 
 			return incident;
 		}
@@ -110,17 +104,61 @@ namespace Noobot.Modules.IncidentManagement
 			this.storageClient.UpdateIncident(incident);
 
 			var title = $"INCIDENT CLOSED #{ incident.FriendlyId }";
-			var messageText = $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
-							+ $"Resolved Timestamp: { incident.ResolvedDateTimeUtc } UTC\n"
-							+ $"Closed Timestamp: { incident.ClosedDateTimeUtc } UTC\n"
-							+ $"Closed By: @{ incident.ClosedBy }\n"
-							+ $"Channel: { incident.ChannelName }\n" + $"Description: { incident.Title }\n";
+			var messageText = this.GetClosedIncidentTextWithoutIncidentId(incident);
 
-			this.SendIncidentChannelMessage(title, messageText, "#439FE0");
+			this.SendIncidentChannelMessage(title, messageText, Configuration.ClosedIncidentColor);
 
 			return incident;
 		}
 
+		internal List<Attachment> GetOpenIncidents()
+		{
+			var openIncidents = this.storageClient.GetOpenIncidents().OrderBy(x => x.DeclaredDateTimeUtc).ToList();
+			var attachments = this.GetAttachmentsForUnresolvedIncidents(openIncidents);
+
+			attachments.AddRange(this.GetAttachmentsForResolvedIncidents(openIncidents));
+
+			return attachments;
+		}
+
+		internal List<Attachment> GetRecentIncidents()
+		{
+			var recentIncidents = this.storageClient.GetRecentIncidents().OrderBy(x => x.DeclaredDateTimeUtc).ToList();
+			var attachments = this.GetAttachmentsForUnresolvedIncidents(recentIncidents);
+
+			attachments.AddRange(this.GetAttachmentsForResolvedIncidents(recentIncidents));
+			attachments.AddRange(this.GetAttachmentsForClosedIncidents(recentIncidents));
+
+			return attachments;
+		}
+
+		private List<Attachment> GetAttachmentsForUnresolvedIncidents(List<Incident> incidents)
+		{
+			return incidents.Where(x => x.ResolvedDateTimeUtc == null).Select(
+				incident => this.GenerateAttachment(incident, Configuration.UnresolvedIncidentColor)).ToList();
+		}
+
+		private List<Attachment> GetAttachmentsForResolvedIncidents(List<Incident> incidents)
+		{
+			return incidents.Where(x => x.ResolvedDateTimeUtc != null).Select(
+				incident => this.GenerateAttachment(incident, Configuration.ResolvedIncidentColor)).ToList();
+		}
+
+		private List<Attachment> GetAttachmentsForClosedIncidents(List<Incident> incidents)
+		{
+			return incidents.Where(x => x.ResolvedDateTimeUtc != null).Select(
+				incident => this.GenerateAttachment(incident, Configuration.ClosedIncidentColor)).ToList();
+		}
+
+		private Attachment GenerateAttachment(Incident incident, string attachmentColor)
+		{
+			return new Attachment
+					{
+						Title = $"INCIDENT { incident.FriendlyId }",
+						Text = this.GetResolvedIncidentTextWithoutIncidentId(incident),
+						Color = attachmentColor
+			};
+		}
 
 		private void SendIncidentChannelMessage(string title, string messageText, string messageColor)
 		{
@@ -129,6 +167,33 @@ namespace Noobot.Modules.IncidentManagement
 			var message = new BotMessage { ChatHub = chatHub, Attachments = new List<SlackAttachment> { attachement } };
 
 			this.SlackConnection.Say(message);
+		}
+
+		private string GetUnresolvedIncidentTextWithoutIncidentId(Incident incident)
+		{
+			return $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
+				+ $"Reported By: @{ incident.DeclaredBy }\n"
+				+ $"Channel: { incident.ChannelName }\n"
+				+ $"Description: { incident.Title }";
+		}
+
+		private string GetResolvedIncidentTextWithoutIncidentId(Incident incident)
+		{
+			return $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
+				+ $"Resolved Timestamp: { incident.ResolvedDateTimeUtc } UTC\n"
+				+ $"Resolved By: @{ incident.ResolvedBy }\n"
+				+ $"Channel: { incident.ChannelName }\n"
+				+ $"Description: { incident.Title }";
+		}
+
+		private string GetClosedIncidentTextWithoutIncidentId(Incident incident)
+		{
+			return $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
+					+ $"Resolved Timestamp: { incident.ResolvedDateTimeUtc } UTC\n"
+					+ $"Closed Timestamp: { incident.ClosedDateTimeUtc } UTC\n"
+					+ $"Closed By: @{ incident.ClosedBy }\n"
+					+ $"Channel: { incident.ChannelName }\n"
+					+ $"Description: { incident.Title }";
 		}
 	}
 }

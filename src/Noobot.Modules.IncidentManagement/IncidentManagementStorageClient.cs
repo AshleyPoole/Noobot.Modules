@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -82,6 +83,41 @@ namespace Noobot.Modules.IncidentManagement
 		{
 			var updateOperation = TableOperation.Replace(incident);
 			return (Incident)this.incidentTable.ExecuteAsync(updateOperation).Result.Result;
+		}
+
+		internal List<Incident> GetOpenIncidents()
+		{
+			var query = new TableQuery<Incident>().Where(
+				TableQuery.GenerateFilterConditionForBool(nameof(Incident.Closed), QueryComparisons.Equal, false));
+
+			TableContinuationToken token = null;
+			do
+			{
+				var incidents = this.incidentTable.ExecuteQuerySegmentedAsync(query, token).Result;
+				token = incidents.ContinuationToken;
+
+				return incidents.Results;
+
+			} while (token != null);
+		}
+
+		internal List<Incident> GetRecentIncidents()
+		{
+			var query = new TableQuery<Incident>().Where(
+				TableQuery.GenerateFilterCondition(
+					nameof(Incident.PartitionKey),
+					QueryComparisons.GreaterThanOrEqual,
+					DateTime.UtcNow.AddDays(-7).ToString("yyyy-MM-dd")));
+
+			TableContinuationToken token = null;
+			do
+			{
+				var incidents = this.incidentTable.ExecuteQuerySegmentedAsync(query, token).Result;
+				token = incidents.ContinuationToken;
+
+				return incidents.Results;
+
+			} while (token != null);
 		}
 	}
 }
