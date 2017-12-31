@@ -9,7 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noobot.Modules.NewRelic", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noobot.Modules.Dns", "src\Noobot.Modules.Dns\Noobot.Modules.Dns.csproj", "{67F828FF-F81C-4C01-AA50-7132EF1A74DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noobot.Modules.IncidentManagement", "src\Noobot.Modules.IncidentManagement\Noobot.Modules.IncidentManagement.csproj", "{A4041349-A90B-47A9-A4AB-3CD14513D6C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noobot.Modules.IncidentManagement", "src\Noobot.Modules.IncidentManagement\Noobot.Modules.IncidentManagement.csproj", "{A4041349-A90B-47A9-A4AB-3CD14513D6C6}"
+EndProject
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
