@@ -1,10 +1,8 @@
 ﻿using Noobot.Core.Configuration;
 
-using StructureMap.Building;
-
 namespace Noobot.Modules.IncidentManagement
 {
-	public class Configuration : ConfigurationBase
+	internal class Configuration : ConfigurationBase
 	{
 		public const string Prefix = "incident";
 

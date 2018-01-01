@@ -43,8 +43,8 @@ namespace Noobot.Modules.Dns
 				yield break;
 			}
 
-			var hostToLookup = this.dnsPlugin.GetHostFromMessage(incomingMessage.TargetedText);
-			var ipAddresses = this.dnsPlugin.LookUpIpFromCommandText(incomingMessage.TargetedText);
+			var hostToLookup = DnsPlugin.GetHostFromMessage(incomingMessage.TargetedText);
+			var ipAddresses = DnsPlugin.LookUpIpFromCommandText(incomingMessage.TargetedText);
 
 			if (ipAddresses == null)
 			{
@@ -52,7 +52,7 @@ namespace Noobot.Modules.Dns
 				yield break;
 			}
 			
-			yield return incomingMessage.ReplyToChannel($"dns lookup for '{hostToLookup}' returned: {this.dnsPlugin.GetIpAddressesAsText(ipAddresses)}");
+			yield return incomingMessage.ReplyToChannel($"dns lookup for '{hostToLookup}' returned: {DnsPlugin.GetIpAddressesAsText(ipAddresses)}");
 		}
 
 		private static bool DnsLookupCommandWellFormatted(string message)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Text;
 
 using Noobot.Core.Plugins;
 
@@ -17,7 +16,7 @@ namespace Noobot.Modules.Dns
 		{
 		}
 
-		internal IPAddress[] LookUpIpFromCommandText(string hostToLookup)
+		internal static IPAddress[] LookUpIpFromCommandText(string hostToLookup)
 		{
 			
 			IPAddress[] ipAddresses;
@@ -34,7 +33,7 @@ namespace Noobot.Modules.Dns
 			return ipAddresses;
 		}
 
-		internal string GetIpAddressesAsText(IEnumerable<IPAddress> ipAddresses)
+		internal static string GetIpAddressesAsText(IEnumerable<IPAddress> ipAddresses)
 		{
 			var ipAddressesMessage = string.Empty;
 
@@ -51,7 +50,7 @@ namespace Noobot.Modules.Dns
 			return ipAddressesMessage;
 		}
 
-		internal string GetHostFromMessage(string messageText)
+		internal static string GetHostFromMessage(string messageText)
 		{
 			var hostText = messageText.Split(" ", StringSplitOptions.RemoveEmptyEntries)[2];
 			return hostText.Contains("|") ? hostText.Substring(hostText.IndexOf("|", StringComparison.Ordinal) + 1).Replace(">", string.Empty) : messageText;
