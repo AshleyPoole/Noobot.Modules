@@ -3,11 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>netcoreapp2.0</TargetFramework>
 		<PackageId>Noobot.Modules.LoadBalancerDotOrg</PackageId>
-		<PackageVersion>1.0.0</PackageVersion>
+		<PackageVersion>1.0.1</PackageVersion>
 		<Authors>Ashley Poole</Authors>
 		<Description>LoadBalancer.Org module for Noobot framework</Description>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageReleaseNotes>First release of the LoadBalancer.org module for Noobot framework that supporting using the drain, halt and online commands against a VIP.</PackageReleaseNotes>
+		<PackageReleaseNotes>Correct issue with incorrect commands.</PackageReleaseNotes>
 		<PackageTags>Noobot Noobot.Modules LoadBalancer.Org LoadBalancer chatops chatbot bot</PackageTags>
 		<PackageProjectUrl>https://github.com/AshleyPoole/Noobot.Modules</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/AshleyPoole/Noobot.Modules</RepositoryUrl>
@@ -18,7 +18,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Noobot.Core" Version="3.1.42" />
+		<PackageReference Include="Noobot.Core" Version="3.1.55" />
 	</ItemGroup>
 
 </Project>
