@@ -59,7 +59,7 @@ namespace Noobot.Modules.NewRelic
 
 		private IEnumerable<ResponseMessage> ApplicationsHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			incomingMessage.IndicateTypingOnChannel();
+			yield return incomingMessage.IndicateTypingOnChannel();
 
 			string responseText;
 
@@ -80,7 +80,7 @@ namespace Noobot.Modules.NewRelic
 
 		private IEnumerable<ResponseMessage> ApplicationSummaryHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			incomingMessage.IndicateTypingOnChannel();
+			yield return incomingMessage.IndicateTypingOnChannel();
 
 			if (NewRelicPlugin.ApplicationTargetedCommandMisformed(incomingMessage.TargetedText))
 			{
@@ -100,14 +100,14 @@ namespace Noobot.Modules.NewRelic
 
 		private IEnumerable<ResponseMessage> AllApplicationSummaryHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			incomingMessage.IndicateTypingOnChannel();
+			yield return incomingMessage.IndicateTypingOnChannel();
 
 			yield return incomingMessage.ReplyToChannel(this.newRelicPlugin.GetApplicationsSummaryText());
 		}
 
 		private IEnumerable<ResponseMessage> ApplicationMetricsHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			incomingMessage.IndicateTypingOnChannel();
+			yield return incomingMessage.IndicateTypingOnChannel();
 			yield return incomingMessage.ReplyToChannel($"Sorry this command isn't supported yet.");
 			yield break;
 

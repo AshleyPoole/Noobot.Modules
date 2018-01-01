@@ -69,7 +69,7 @@ namespace Noobot.Modules.IncidentManagement
 
 		private IEnumerable<ResponseMessage> NewIncidentHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			incomingMessage.IndicateTypingOnChannel();
+			yield return incomingMessage.IndicateTypingOnChannel();
 
 			if (!this.incidentManagementPlugin.NewIncidentCommandWellFormatted(incomingMessage.TargetedText))
 			{
@@ -99,7 +99,7 @@ namespace Noobot.Modules.IncidentManagement
 
 		private IEnumerable<ResponseMessage> ResolveIncidentHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			incomingMessage.IndicateTypingOnChannel();
+			yield return incomingMessage.IndicateTypingOnChannel();
 
 			var friendlyChannelName = this.incidentManagementPlugin.GetUserFriendlyChannelName(incomingMessage.Channel);
 			var incident = this.incidentManagementPlugin.ResolveIncident(incomingMessage.Username, friendlyChannelName);
@@ -117,7 +117,7 @@ namespace Noobot.Modules.IncidentManagement
 
 		private IEnumerable<ResponseMessage> CloseIncidentHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			incomingMessage.IndicateTypingOnChannel();
+			yield return incomingMessage.IndicateTypingOnChannel();
 
 			var friendlyChannelName = this.incidentManagementPlugin.GetUserFriendlyChannelName(incomingMessage.Channel);
 			var incident = this.incidentManagementPlugin.CloseIncident(incomingMessage.Username, friendlyChannelName);
@@ -137,7 +137,7 @@ namespace Noobot.Modules.IncidentManagement
 
 		private IEnumerable<ResponseMessage> ListActiveIncidentHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			incomingMessage.IndicateTypingOnChannel();
+			yield return incomingMessage.IndicateTypingOnChannel();
 
 			var openIncidentAttachments = this.incidentManagementPlugin.GetOpenIncidents();
 
@@ -157,7 +157,7 @@ namespace Noobot.Modules.IncidentManagement
 
 		private IEnumerable<ResponseMessage> ListRecentIncidentHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			incomingMessage.IndicateTypingOnChannel();
+			yield return incomingMessage.IndicateTypingOnChannel();
 
 			var recentIncidentAttachments = this.incidentManagementPlugin.GetRecentIncidents();
 

@@ -68,7 +68,7 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 			Exception exception = null;
 			HttpResponseMessage apiResponseMessage = null;
 
-			incomingMessage.IndicateTypingOnChannel();
+			yield return incomingMessage.IndicateTypingOnChannel();
 
 			if (this.lboPlugin.CommandMisformed(incomingMessage.TargetedText))
 			{

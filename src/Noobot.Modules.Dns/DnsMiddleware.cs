@@ -35,7 +35,7 @@ namespace Noobot.Modules.Dns
 
 		private IEnumerable<ResponseMessage> DnsLookupHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			incomingMessage.IndicateTypingOnChannel();
+			yield return incomingMessage.IndicateTypingOnChannel();
 
 			if (!DnsLookupCommandWellFormatted(incomingMessage.TargetedText))
 			{

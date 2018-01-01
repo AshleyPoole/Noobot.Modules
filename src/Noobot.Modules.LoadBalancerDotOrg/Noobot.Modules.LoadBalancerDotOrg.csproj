@@ -3,11 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>netcoreapp2.0</TargetFramework>
 		<PackageId>Noobot.Modules.LoadBalancerDotOrg</PackageId>
-		<PackageVersion>1.0.1</PackageVersion>
+		<PackageVersion>1.0.2</PackageVersion>
 		<Authors>Ashley Poole</Authors>
 		<Description>LoadBalancer.Org module for Noobot framework</Description>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageReleaseNotes>Correct issue with incorrect commands.</PackageReleaseNotes>
+		<PackageReleaseNotes>Fix issue with indicate typing not working.</PackageReleaseNotes>
 		<PackageTags>Noobot Noobot.Modules LoadBalancer.Org LoadBalancer chatops chatbot bot</PackageTags>
 		<PackageProjectUrl>https://github.com/AshleyPoole/Noobot.Modules</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/AshleyPoole/Noobot.Modules</RepositoryUrl>
@@ -18,7 +18,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Noobot.Core" Version="3.1.55" />
+		<PackageReference Include="Noobot.Core" Version="3.1.42" />
 	</ItemGroup>
 
 </Project>
