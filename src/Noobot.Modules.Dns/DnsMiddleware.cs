@@ -1,7 +1,5 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using Common.Logging;
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
@@ -12,13 +10,16 @@ namespace Noobot.Modules.Dns
 {
 	public class DnsMiddleware : MiddlewareBase
 	{
-		private readonly ILog log;
-
 		private const string Lookup = "lookup";
 
-		public DnsMiddleware(IMiddleware next, ILog log)
+		private readonly DnsPlugin dnsPlugin;
+
+		private readonly ILog log;
+
+		public DnsMiddleware(IMiddleware next, DnsPlugin dnsPlugin, ILog log)
 			: base(next)
 		{
+			this.dnsPlugin = dnsPlugin;
 			this.log = log;
 			this.HandlerMappings = new[]
 									{
@@ -42,27 +43,16 @@ namespace Noobot.Modules.Dns
 				yield break;
 			}
 
-			var hostToLookup = GetHostFromMessage(incomingMessage.TargetedText);
-			var ipAddresses = new IPAddress[] { };
-			var errorDuringLookup = false;
-			
-			try
-			{
-				ipAddresses = System.Net.Dns.GetHostAddresses(hostToLookup);
-			}
-			catch (Exception e)
-			{
-				errorDuringLookup = true;
-				this.log.Error(e);
-			}
+			var hostToLookup = DnsPlugin.GetHostFromMessage(incomingMessage.TargetedText);
+			var ipAddresses = DnsPlugin.LookUpIpFromCommandText(incomingMessage.TargetedText);
 
-			if (errorDuringLookup || ipAddresses == null)
+			if (ipAddresses == null)
 			{
 				yield return incomingMessage.ReplyToChannel($"Error looking up requested host '{hostToLookup}'. No result were returned.");
 				yield break;
 			}
 			
-			yield return incomingMessage.ReplyToChannel($"dns lookup for '{hostToLookup}' returned: {GetIpAddressesAsText(ipAddresses)}");
+			yield return incomingMessage.ReplyToChannel($"dns lookup for '{hostToLookup}' returned: {DnsPlugin.GetIpAddressesAsText(ipAddresses)}");
 		}
 
 		private static bool DnsLookupCommandWellFormatted(string message)
@@ -73,29 +63,6 @@ namespace Noobot.Modules.Dns
 		private static string GetHelpText(string command)
 		{
 			return $"`{Configuration.CommandPrefix} ||action|| www.ashleypoole.co.uk`".Replace("||action||", command);
-		}
-
-		private static string GetHostFromMessage(string messageText)
-		{
-			var hostText = messageText.Split(" ", StringSplitOptions.RemoveEmptyEntries)[2];
-			return hostText.Contains("|") ? hostText.Substring(hostText.IndexOf("|", StringComparison.Ordinal) + 1).Replace(">", string.Empty) : messageText;
-		}
-
-		private static string GetIpAddressesAsText(IEnumerable<IPAddress> ipAddresses)
-		{
-			var ipAddressesMessage = string.Empty;
-
-			foreach (var ip in ipAddresses)
-			{
-				if (!string.IsNullOrWhiteSpace(ipAddressesMessage))
-				{
-					ipAddressesMessage += ", ";
-				}
-
-				ipAddressesMessage += ip.ToString();
-			}
-
-			return ipAddressesMessage;
 		}
 	}
 }

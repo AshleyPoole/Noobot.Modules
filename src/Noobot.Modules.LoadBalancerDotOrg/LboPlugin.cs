@@ -32,9 +32,9 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 		{
 		}
 
-		internal static bool CommandWellFormatted(string message)
+		internal bool CommandMisformed(string message)
 		{
-			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length == 5;
+			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length != 5;
 		}
 
 		internal LoadBalanacerAppliance GetAppliance(string applianceName)
@@ -47,20 +47,48 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 			}
 			catch (Exception e)
 			{
-				this.log.Error(e);
+				this.log.Error($"Unable to find load balancer appliance with name:{applianceName}", e);
 				return null;
 			}
 		}
 
-		internal bool TrustAllCerts => this.configReader.GetConfigEntry<bool>($"{Configuration.Prefix}:trustAllCerts");
+		internal HttpResponseMessage MakeApiRequest(LoadBalanacerAppliance appliance, LoadBalancerRequest request)
+		{
+			using (var handler = new HttpClientHandler())
+			{
+				if (this.TrustAllCerts)
+				{
+					handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+				}
 
-		internal AuthenticationHeaderValue GetAuthHeader(LoadBalanacerAppliance appliance)
+				using (var client = new HttpClient(handler))
+				{
+					client.DefaultRequestHeaders.Authorization = GetAuthHeader(appliance);
+					return client.PostAsync(appliance.ApiUrl, GetRequestContent(appliance, request)).Result;
+				}
+			}
+		}
+
+		internal bool ApiRequestThrewException(HttpResponseMessage responseMessage, Exception exception)
+		{
+			return exception != null || responseMessage == null || !responseMessage.IsSuccessStatusCode;
+		}
+
+		internal string ParseApiResponse(HttpResponseMessage responseMessage)
+		{
+			var lbResponse = responseMessage.Content.ReadAsStringAsync().Result;
+			return lbResponse.Replace("\n", string.Empty).Replace("LBCLI:", string.Empty);
+		}
+
+		private bool TrustAllCerts => this.configReader.GetConfigEntry<bool>($"{Configuration.Prefix}:trustAllCerts");
+
+		private static AuthenticationHeaderValue GetAuthHeader(LoadBalanacerAppliance appliance)
 		{
 			var bytes = Encoding.ASCII.GetBytes($"{appliance.Username}:{appliance.Password}");
 			return new AuthenticationHeaderValue("Basic", Convert.ToBase64String(bytes));
 		}
 
-		internal StringContent GetRequestContent(LoadBalanacerAppliance applaince, LoadBalancerRequest request)
+		private static StringContent GetRequestContent(LoadBalanacerAppliance applaince, LoadBalancerRequest request)
 		{
 			var apiRequest = new ApiRequest(applaince.ApiKey, request.Command, request.Vip, request.Rip);
 			return new StringContent(JsonConvert.SerializeObject(apiRequest), Encoding.UTF8);

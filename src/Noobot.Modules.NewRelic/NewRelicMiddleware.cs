@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 
 using Common.Logging;
 
@@ -61,83 +61,48 @@ namespace Noobot.Modules.NewRelic
 		{
 			incomingMessage.IndicateTypingOnChannel();
 
-			var newRelic = this.newRelicPlugin.GetNewRelicClient();
-			var applications = newRelic.GetApplications().Result.Applications;
+			string responseText;
 
-			var applicationsMessage = string.Empty;
-
-			foreach (var application in applications)
+			try
 			{
-				if (!string.IsNullOrWhiteSpace(applicationsMessage))
-				{
-					applicationsMessage += "\n";
-				}
+				responseText = this.newRelicPlugin.GetApplicationsText();
+				
 
-				applicationsMessage += $"ID: {application.Id}    Name: {application.Name}    HealthStatus: {application.HealthStatus}";
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e);
+				responseText = "An exception occurred when retrieving an list of the applications from NewRelic.";
 			}
 
-			yield return incomingMessage.ReplyToChannel($"There are {applications.Count} applications in NewRelic. Those are:\n {applicationsMessage}");
+			yield return incomingMessage.ReplyToChannel(responseText);
 		}
 
 		private IEnumerable<ResponseMessage> ApplicationSummaryHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
 			incomingMessage.IndicateTypingOnChannel();
 
-			if (!NewRelicPlugin.ApplicationTargetedCommandWellFormatted(incomingMessage.TargetedText))
+			if (NewRelicPlugin.ApplicationTargetedCommandMisformed(incomingMessage.TargetedText))
 			{
 				yield return incomingMessage.ReplyToChannel($"NewRelic application summary was not formatted correctly. Help: {this.applicationSummaryHelpText}");
 				yield break;
 			}
 
-			var newRelic = this.newRelicPlugin.GetNewRelicClient();
-			var applications = newRelic.GetApplications().Result.Applications;
-
-			var application = applications.FirstOrDefault(
-				x => x.Id == this.newRelicPlugin.GetAccountIdFromApplicationTargeted(incomingMessage.TargetedText));
+			var application = this.newRelicPlugin.GetApplicationFromTargetedText(incomingMessage.TargetedText);
 			if (application == null)
 			{
-				yield return incomingMessage.ReplyToChannel($"No NewRelic application could be found with the ID listed. Help: {this.applicationSummaryHelpText}");
+				yield return incomingMessage.ReplyToChannel($"No NewRelic application could be found with the ID specified. Help: {this.applicationSummaryHelpText}");
 				yield break;
 			}
 
-			var applicationMessage = $"HealthStatus: {application.HealthStatus}\n"
-				+ $"Language: {application.Language}\n"
-				+ $"IsReporting: {application.IsReporting}\n"
-				+ $"LastReportedDate: {application.LastReportedDate}\n"
-				+ $"ResponseTime: {application.Summary.ResponseTime} ms\n"
-				+ $"ErrorRate: {application.Summary.ErrorRate}\n"
-				+ $"Apendex: {application.Summary.ApdexScore} / {application.Summary.ApdexTarget} target\n";
-
-			yield return incomingMessage.ReplyToChannel($"NewRelic application summary for {application.Id} ({application.Name}):\n {applicationMessage}");
+			yield return incomingMessage.ReplyToChannel(this.newRelicPlugin.GetApplicationHealthText(application));
 		}
 
 		private IEnumerable<ResponseMessage> AllApplicationSummaryHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
 			incomingMessage.IndicateTypingOnChannel();
 
-			var newRelic = this.newRelicPlugin.GetNewRelicClient();
-			var applications = newRelic.GetApplications().Result.Applications;
-
-			var applicationsMessage = string.Empty;
-
-			foreach (var application in applications)
-			{
-				if (!string.IsNullOrWhiteSpace(applicationsMessage))
-				{
-					applicationsMessage += "\n\n";
-				}
-
-				applicationsMessage += $"*** {application.Id} ({application.Name}) ***\n"
-					+ $"HealthStatus: {application.HealthStatus}\n"
-					+ $"Language: {application.Language}\n"
-					+ $"IsReporting: {application.IsReporting}\n"
-					+ $"LastReportedDate: {application.LastReportedDate}\n"
-					+ $"ResponseTime: {application.Summary.ResponseTime} ms\n"
-					+ $"ErrorRate: {application.Summary.ErrorRate}\n"
-					+ $"Apendex: {application.Summary.ApdexScore} / {application.Summary.ApdexTarget} target";
-			}
-
-			yield return incomingMessage.ReplyToChannel($"NewRelic summary for all applications:\n {applicationsMessage}");
+			yield return incomingMessage.ReplyToChannel(this.newRelicPlugin.GetApplicationsSummaryText());
 		}
 
 		private IEnumerable<ResponseMessage> ApplicationMetricsHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
@@ -146,37 +111,20 @@ namespace Noobot.Modules.NewRelic
 			yield return incomingMessage.ReplyToChannel($"Sorry this command isn't supported yet.");
 			yield break;
 
-			if (!NewRelicPlugin.ApplicationTargetedCommandWellFormatted(incomingMessage.TargetedText))
+			if (NewRelicPlugin.ApplicationTargetedCommandMisformed(incomingMessage.TargetedText))
 			{
 				yield return incomingMessage.ReplyToChannel($"NewRelic application metrics command was not formatted correctly. Help: {this.applicationMetricsHelpText}");
 				yield break;
 			}
 
-			var newRelic = this.newRelicPlugin.GetNewRelicClient();
-
-			var applicationId = this.newRelicPlugin.GetAccountIdFromApplicationTargeted(incomingMessage.TargetedText);
-
-			var applicationMetrics = newRelic.GetSummaryMetrics(applicationId).Result;
-			if (applicationMetrics == null)
+			var application = this.newRelicPlugin.GetApplicationFromTargetedText(incomingMessage.TargetedText);
+			if (application == null)
 			{
-				yield return incomingMessage.ReplyToChannel($"No NewRelic application could be found with the ID listed. Help: {this.applicationMetricsHelpText}");
+				yield return incomingMessage.ReplyToChannel($"No NewRelic application could be found with the ID specified. Help: {this.applicationMetricsHelpText}");
 				yield break;
 			}
 
-			var metricsMessage = string.Empty;
-
-			foreach (var metric in applicationMetrics)
-			{
-				if (!string.IsNullOrWhiteSpace(metricsMessage))
-				{
-					metricsMessage += "\n";
-				}
-
-				metricsMessage += $"MetricName: {metric.Name}    BeginTime: {metric.BeginTime}    EndTime: {metric.EndTime}    MetricValue: {metric.FormattedMetricValue}";
-			}
-
-			yield return incomingMessage.ReplyToChannel($"NewRelic metrics summary for {applicationId}");
+			yield return incomingMessage.ReplyToChannel(this.newRelicPlugin.GetSummaryMetricsText(application.Id));
 		}
-
 	}
 }

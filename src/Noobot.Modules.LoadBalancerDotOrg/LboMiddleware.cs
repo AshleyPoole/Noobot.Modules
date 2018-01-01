@@ -55,22 +55,22 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 
 		private IEnumerable<ResponseMessage> HaltHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			return this.GenericCommandHandler(incomingMessage, LoadBalancerActions.Drain);
+			return this.GenericCommandHandler(incomingMessage, LoadBalancerActions.Halt);
 		}
 
 		private IEnumerable<ResponseMessage> OnlineHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
 		{
-			return this.GenericCommandHandler(incomingMessage, LoadBalancerActions.Drain);
+			return this.GenericCommandHandler(incomingMessage, LoadBalancerActions.Online);
 		}
 
 		private IEnumerable<ResponseMessage> GenericCommandHandler(IncomingMessage incomingMessage, string command)
 		{
 			Exception exception = null;
-			HttpResponseMessage httpResponse = null;
+			HttpResponseMessage apiResponseMessage = null;
 
 			incomingMessage.IndicateTypingOnChannel();
 
-			if (!LboPlugin.CommandWellFormatted(incomingMessage.TargetedText))
+			if (this.lboPlugin.CommandMisformed(incomingMessage.TargetedText))
 			{
 				yield return incomingMessage.ReplyToChannel($"Command was not formatted correctly. Help: '{GetHelpText(command)}'");
 				yield break;
@@ -81,41 +81,27 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 			var appliance = this.lboPlugin.GetAppliance(lboRequest.ApplianceName);
 			if (appliance == null)
 			{
-				yield return incomingMessage.ReplyToChannel($"No applaince could be found with the name {lboRequest.ApplianceName}. Help: '{GetHelpText(command)}'");
+				yield return incomingMessage.ReplyToChannel($"No appliance could be found with the name:{lboRequest.ApplianceName}. Help: '{GetHelpText(command)}'");
 				yield break;
 			}
 
-			using (var handler = new HttpClientHandler())
+			try
 			{
-				if (this.lboPlugin.TrustAllCerts)
-				{
-					handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
-				}
-
-				using (var client = new HttpClient(handler))
-				{
-					try
-					{
-						
-						client.DefaultRequestHeaders.Authorization = this.lboPlugin.GetAuthHeader(appliance);
-						httpResponse = client.PostAsync(appliance.ApiUrl, this.lboPlugin.GetRequestContent(appliance, lboRequest)).Result;
-					}
-					catch (Exception e)
-					{
-						this.log.Error(e);
-						exception = e;
-					}
-				}
+				apiResponseMessage = this.lboPlugin.MakeApiRequest(appliance, lboRequest);
+			}
+			catch (Exception e)
+			{
+				this.log.Error(e);
+				exception = e;
 			}
 
-			if (exception != null || httpResponse == null || !httpResponse.IsSuccessStatusCode)
+			if (this.lboPlugin.ApiRequestThrewException(apiResponseMessage, exception))
 			{
 				yield return incomingMessage.ReplyToChannel($"An exception occured when communicating to applicance '{appliance.Name} ({appliance.ApiUrl}).");
 				yield break;
 			}
 
-			var lbResponse = httpResponse.Content.ReadAsStringAsync().Result;
-			lbResponse = lbResponse.Replace("\n", string.Empty).Replace("LBCLI:", string.Empty);
+			var lbResponse = this.lboPlugin.ParseApiResponse(apiResponseMessage);
 
 			if (lbResponse.Contains("Error"))
 			{
