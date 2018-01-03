@@ -6,6 +6,7 @@ using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
+using Noobot.Modules.IncidentManagement.Models;
 
 namespace Noobot.Modules.IncidentManagement
 {
@@ -76,8 +77,11 @@ namespace Noobot.Modules.IncidentManagement
 				yield return incomingMessage.ReplyToChannel($"Please provide incident title. Help: {this.newIncidentHelpText}");
 			}
 
-			var friendlyChannelName = this.incidentManagementPlugin.GetUserFriendlyChannelName(incomingMessage.Channel);
-			if (friendlyChannelName == this.incidentManagementPlugin.MainIncidentChannel)
+			var channel = new Channel(
+				incomingMessage.Channel,
+				this.incidentManagementPlugin.GetUserFriendlyChannelName(incomingMessage.Channel));
+
+			if (channel.Name == this.incidentManagementPlugin.MainIncidentChannel)
 			{
 				yield return incomingMessage.ReplyToChannel($"Sorry, new incidents cannot be declared in this channel as bots are unable to create new channels. Please create a dedicated channel for this incident and declare the incident from there.");
 			}
@@ -90,7 +94,7 @@ namespace Noobot.Modules.IncidentManagement
 			var incidentText =
 				this.incidentManagementPlugin.GetIncidentText($"{Configuration.Prefix} new", incomingMessage.TargetedText);
 
-			var incident = this.incidentManagementPlugin.DeclareNewIncident(incidentText, incomingMessage.Username, friendlyChannelName);
+			var incident = this.incidentManagementPlugin.DeclareNewIncident(incidentText, incomingMessage.Username, channel);
 
 			yield return incomingMessage.ReplyToChannel($"Incident #{incident.FriendlyId} succesfully declared and posted to #{ this.incidentManagementPlugin.MainIncidentChannel }.\n"
 														+ $"Remember to add people to this channel that may be able to help mitigate this incident. Run { this.resolveIncidentHelpText } after the incident is mitigated. \n"

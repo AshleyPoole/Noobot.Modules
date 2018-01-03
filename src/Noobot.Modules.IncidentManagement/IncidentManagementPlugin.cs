@@ -54,9 +54,9 @@ namespace Noobot.Modules.IncidentManagement
 			return this.SlackConnection.GetChannels().Result.FirstOrDefault(x => x.Id == channel)?.Name;
 		}
 
-		internal Incident DeclareNewIncident(string incidentText, string reportedByUser, string incidentChannelName)
+		internal Incident DeclareNewIncident(string incidentText, string reportedByUser, Channel channel)
 		{
-			var incident = new Incident(incidentText, incidentChannelName, reportedByUser);
+			var incident = new Incident(incidentText, channel, reportedByUser);
 			incident.SetRowKey(this.storageClient.GetNextRowKey(incident.PartitionKey));
 
 			incident = this.storageClient.PersistNewIncident(incident);
@@ -64,6 +64,8 @@ namespace Noobot.Modules.IncidentManagement
 			var title = $"INCIDENT DECLARED #{ incident.FriendlyId }";
 			var messageText = this.GetUnresolvedIncidentTextWithoutIncidentId(incident);
 
+			this.SetChannelPurposeBasedOnIncidentStatus(incident);
+			this.SetChannelTopicBasedOnIncidentStatus(incident);
 			this.SendIncidentChannelMessage(title, messageText, Configuration.UnresolvedIncidentColor);
 
 			return incident;
@@ -85,6 +87,7 @@ namespace Noobot.Modules.IncidentManagement
 			var title = $"INCIDENT RESOLVED #{ incident.FriendlyId }";
 			var messageText = this.GetResolvedIncidentTextWithoutIncidentId(incident);
 
+			this.SetChannelPurposeBasedOnIncidentStatus(incident);
 			this.SendIncidentChannelMessage(title, messageText, Configuration.ResolvedIncidentColor);
 
 			return incident;
@@ -106,6 +109,8 @@ namespace Noobot.Modules.IncidentManagement
 			var title = $"INCIDENT CLOSED #{ incident.FriendlyId }";
 			var messageText = this.GetClosedIncidentTextWithoutIncidentId(incident);
 
+			this.SetChannelPurposeBasedOnIncidentStatus(incident);
+			this.SetChannelTopicBasedOnIncidentStatus(incident);
 			this.SendIncidentChannelMessage(title, messageText, Configuration.ClosedIncidentColor);
 
 			return incident;
@@ -194,6 +199,38 @@ namespace Noobot.Modules.IncidentManagement
 					+ $"Closed By: @{ incident.ClosedBy }\n"
 					+ $"Channel: { incident.ChannelName }\n"
 					+ $"Description: { incident.Title }";
+		}
+
+		private void SetChannelPurposeBasedOnIncidentStatus(Incident incident)
+		{
+			if (incident.Resolved && incident.Closed)
+			{
+				this.SlackConnection.SetChannelPurpose(
+					incident.ChannelId,
+					$"Incident Warroom -- No active incident bound");
+			}
+			else
+			{
+				this.SlackConnection.SetChannelPurpose(
+					incident.ChannelId,
+					$"INCIDENT #{ incident.FriendlyId } -- { incident.FriendlyStatus } -- { incident.Title }");
+			}
+		}
+
+		private void SetChannelTopicBasedOnIncidentStatus(Incident incident)
+		{
+			if (incident.Resolved && incident.Closed)
+			{
+				this.SlackConnection.SetChannelTopic(
+					incident.ChannelId,
+					string.Empty);
+			}
+			else
+			{
+				this.SlackConnection.SetChannelTopic(
+					incident.ChannelId,
+					$"INCIDENT #{ incident.FriendlyId }");
+			}
 		}
 	}
 }

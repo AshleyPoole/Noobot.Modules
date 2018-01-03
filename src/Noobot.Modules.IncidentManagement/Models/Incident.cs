@@ -4,14 +4,15 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Noobot.Modules.IncidentManagement.Models
 {
-	public class Incident : TableEntity
+	internal class Incident : TableEntity
 	{
-		public Incident(string incidentTitle, string declaredInChannelName, string declaredBy)
+		public Incident(string incidentTitle, Channel channel, string declaredBy)
 		{
 			this.Id = Guid.NewGuid();
 			this.PartitionKey = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
-			this.ChannelName = declaredInChannelName;
+			this.ChannelId = channel.Id;
+			this.ChannelName = channel.Name;
 			this.Title = incidentTitle;
 			this.DeclaredBy = declaredBy;
 			this.DeclaredDateTimeUtc = DateTime.UtcNow;
@@ -26,9 +27,11 @@ namespace Noobot.Modules.IncidentManagement.Models
 
 		public Guid Id { get; set; }
 
-		public string ChannelName { get; set; }
-
 		public string Title { get; set; }
+
+		public string ChannelId { get; set; }
+
+		public string ChannelName { get; set; }
 
 		public string DeclaredBy { get; set; }
 
@@ -47,6 +50,31 @@ namespace Noobot.Modules.IncidentManagement.Models
 		public DateTime? ClosedDateTimeUtc { get; set; }
 
 		public string FriendlyId => $"{this.PartitionKey}-{this.RowKey}";
+
+		public string FriendlyStatus
+		{
+			get
+			{
+				var incidentStatus = "UNKNOWN";
+
+				if (!this.Resolved && !this.Closed)
+				{
+					incidentStatus = "IN-PROGRESS";
+				}
+
+				if (this.Resolved && !this.Closed)
+				{
+					incidentStatus = "RESOLVED";
+				}
+
+				if (this.Resolved && this.Closed)
+				{
+					incidentStatus = "CLOSED";
+				}
+
+				return incidentStatus;
+			}
+		}
 
 		public void MarkAsResolved(string resolvedBy)
 		{
