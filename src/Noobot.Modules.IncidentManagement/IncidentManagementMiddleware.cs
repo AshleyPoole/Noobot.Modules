@@ -6,7 +6,6 @@ using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
 using Noobot.Core.MessagingPipeline.Response;
-using Noobot.Modules.IncidentManagement.Models;
 
 namespace Noobot.Modules.IncidentManagement
 {
@@ -77,22 +76,7 @@ namespace Noobot.Modules.IncidentManagement
 				yield return incomingMessage.ReplyToChannel($"Please provide incident title. Help: {this.newIncidentHelpText}");
 			}
 
-			//var channel = new Channel(
-			//	incomingMessage.Channel,
-			//	this.incidentManagementPlugin.GetUserFriendlyChannelName(incomingMessage.Channel));
-
-			//if (channel.Name != this.incidentManagementPlugin.MainIncidentChannel)
-			//{
-			//	yield return incomingMessage.ReplyToChannel($"Sorry, new incidents can only be declared in #{ this.incidentManagementPlugin.MainIncidentChannel } channel.");
-			//}
-
-			//if (incomingMessage.ChannelType == ResponseType.DirectMessage)
-			//{
-			//	yield return incomingMessage.ReplyToChannel($"Sorry, new incidents cannot be declared in direct messages. Create a public channel in order to declare incidents... We all want to take part!");
-			//}
-
-			var incidentText =
-				this.incidentManagementPlugin.GetIncidentText($"{Configuration.Prefix} new", incomingMessage.TargetedText);
+			var incidentText = TextHelper.GetIncidentText($"{Configuration.Prefix} new", incomingMessage.TargetedText);
 
 			var incident = this.incidentManagementPlugin.DeclareNewIncident(incidentText, incomingMessage.Username);
 
@@ -112,8 +96,7 @@ namespace Noobot.Modules.IncidentManagement
 		{
 			yield return incomingMessage.IndicateTypingOnChannel();
 
-			var friendlyChannelName = this.incidentManagementPlugin.GetUserFriendlyChannelName(incomingMessage.Channel);
-			var incident = this.incidentManagementPlugin.ResolveIncident(incomingMessage.Username, friendlyChannelName);
+			var incident = this.incidentManagementPlugin.ResolveIncident(incomingMessage.Username, incomingMessage.Channel);
 
 			if (incident == null)
 			{
@@ -130,8 +113,7 @@ namespace Noobot.Modules.IncidentManagement
 		{
 			yield return incomingMessage.IndicateTypingOnChannel();
 
-			var friendlyChannelName = this.incidentManagementPlugin.GetUserFriendlyChannelName(incomingMessage.Channel);
-			var incident = this.incidentManagementPlugin.CloseIncident(incomingMessage.Username, friendlyChannelName);
+			var incident = this.incidentManagementPlugin.CloseIncident(incomingMessage.Username, incomingMessage.Channel);
 
 			if (incident == null)
 			{

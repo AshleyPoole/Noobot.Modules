@@ -50,10 +50,6 @@ namespace Noobot.Modules.IncidentManagement
 			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length >= 3;
 		}
 
-		internal string GetIncidentText(string commandPrefix, string message)
-		{
-			return message.Replace(commandPrefix, string.Empty).Trim();
-		}
 		internal string GetUserFriendlyChannelName(string channel)
 		{
 			return this.SlackConnection.GetChannels().Result.FirstOrDefault(x => x.Id == channel)?.Name
@@ -78,15 +74,18 @@ namespace Noobot.Modules.IncidentManagement
 			this.SetChannelTopicBasedOnIncidentStatus(incident);
 
 			var title = $"INCIDENT DECLARED #{ incident.FriendlyId }";
-			this.SendWarRoomIncidentChannelMessage(incident.ChannelName, this.GetNewIncidentTextForWarRoomChannel(incident));
-			this.SendMainIncidentChannelMessage(title, this.GetNewIncidentTextForMainIncidentChannel(incident), Configuration.UnresolvedIncidentColor);
+			this.SendWarRoomIncidentChannelMessage(incident.ChannelName, TextHelper.GetNewIncidentTextForWarRoomChannel(incident));
+			this.SendMainIncidentChannelMessage(
+				title,
+				TextHelper.GetNewIncidentTextForMainIncidentChannel(incident),
+				Configuration.UnresolvedIncidentColor);
 
 			return incident;
 		}
 
-		internal Incident ResolveIncident(string resolvedBy, string incidentChannelName)
+		internal Incident ResolveIncident(string resolvedBy, string incidentChannelId)
 		{
-			var incident = this.storageClient.GetIncidentByChannel(incidentChannelName);
+			var incident = this.storageClient.GetIncidentByChannelId(incidentChannelId);
 
 			if (incident == null || incident.ResolvedDateTimeUtc != null)
 			{
@@ -98,7 +97,7 @@ namespace Noobot.Modules.IncidentManagement
 			this.storageClient.UpdateIncident(incident);
 
 			var title = $"INCIDENT RESOLVED #{ incident.FriendlyId }";
-			var messageText = this.GetResolvedIncidentTextWithoutIncidentId(incident);
+			var messageText = TextHelper.GetResolvedIncidentTextWithoutIncidentId(incident);
 
 			this.SetChannelPurposeBasedOnIncidentStatus(incident);
 			this.SendMainIncidentChannelMessage(title, messageText, Configuration.ResolvedIncidentColor);
@@ -106,9 +105,9 @@ namespace Noobot.Modules.IncidentManagement
 			return incident;
 		}
 
-		internal Incident CloseIncident(string resolvedBy, string incidentChannelName)
+		internal Incident CloseIncident(string resolvedBy, string incidentChannelId)
 		{
-			var incident = this.storageClient.GetIncidentByChannel(incidentChannelName);
+			var incident = this.storageClient.GetIncidentByChannelId(incidentChannelId);
 
 			if (incident?.ResolvedDateTimeUtc == null || incident.ClosedDateTimeUtc != null)
 			{
@@ -120,7 +119,7 @@ namespace Noobot.Modules.IncidentManagement
 			this.storageClient.UpdateIncident(incident);
 
 			var title = $"INCIDENT CLOSED #{ incident.FriendlyId }";
-			var messageText = this.GetClosedIncidentTextWithoutIncidentId(incident);
+			var messageText = TextHelper.GetClosedIncidentTextWithoutIncidentId(incident);
 
 			this.SetChannelPurposeBasedOnIncidentStatus(incident);
 			this.SetChannelTopicBasedOnIncidentStatus(incident);
@@ -173,7 +172,7 @@ namespace Noobot.Modules.IncidentManagement
 			return new Attachment
 					{
 						Title = $"INCIDENT { incident.FriendlyId }",
-						Text = this.GetResolvedIncidentTextWithoutIncidentId(incident),
+						Text = TextHelper.GetResolvedIncidentTextWithoutIncidentId(incident),
 						Color = attachmentColor
 			};
 		}
@@ -193,39 +192,6 @@ namespace Noobot.Modules.IncidentManagement
 			var message = new BotMessage { ChatHub = chatHub, Text = messageText };
 
 			this.SlackConnection.Say(message);
-		}
-
-		private string GetNewIncidentTextForMainIncidentChannel(Incident incident)
-		{
-			return $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
-				+ $"Reported By: @{ incident.DeclaredBy }\n"
-				+ $"Bound To Channel: #{ incident.ChannelName }\n"
-				+ $"Description: { incident.Title }";
-		}
-
-		private string GetNewIncidentTextForWarRoomChannel(Incident incident)
-		{
-			return $"Incident #{ incident.FriendlyId } regarding '{ incident.Title }' has been declared by @{ incident.DeclaredBy } and bound to this channel.\n"
-				+ "Good luck with this incident and remember to add people to the channel that might be able to help.";
-		}
-
-		private string GetResolvedIncidentTextWithoutIncidentId(Incident incident)
-		{
-			return $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
-				+ $"Resolved Timestamp: { incident.ResolvedDateTimeUtc } UTC\n"
-				+ $"Resolved By: @{ incident.ResolvedBy }\n"
-				+ $"Channel: #{ incident.ChannelName }\n"
-				+ $"Description: { incident.Title }";
-		}
-
-		private string GetClosedIncidentTextWithoutIncidentId(Incident incident)
-		{
-			return $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
-					+ $"Resolved Timestamp: { incident.ResolvedDateTimeUtc } UTC\n"
-					+ $"Closed Timestamp: { incident.ClosedDateTimeUtc } UTC\n"
-					+ $"Closed By: @{ incident.ClosedBy }\n"
-					+ $"Channel: #{ incident.ChannelName }\n"
-					+ $"Description: { incident.Title }";
 		}
 
 		private void SetChannelPurposeBasedOnIncidentStatus(Incident incident)
@@ -250,7 +216,7 @@ namespace Noobot.Modules.IncidentManagement
 			{
 				var result = this.SlackConnection.SetChannelTopic(
 					incident.ChannelId,
-					string.Empty).Result;
+					Configuration.Whitespace).Result;
 			}
 			else
 			{
@@ -262,13 +228,16 @@ namespace Noobot.Modules.IncidentManagement
 
 		private Channel GetAvailableWarRoomChannel()
 		{
+			var channels = this.SlackConnection.GetChannels().Result;
+
 			foreach (var warRoomName in this.WarRooms)
 			{
-				var lastInstanceForChannel = this.storageClient.GetIncidentByChannel(warRoomName);
+				var lastInstanceForChannel = this.storageClient.GetIncidentByChannelName(warRoomName);
 				if (lastInstanceForChannel == null || lastInstanceForChannel.Closed)
 				{
+					var channelNameWithHash = $"#{ warRoomName }";
 					return new Channel(
-						this.SlackConnection.GetChannels().Result.FirstOrDefault(x => x.Name == $"#{ warRoomName }")?.Id,
+						channels.FirstOrDefault(x => x.Name == channelNameWithHash)?.Id,
 						warRoomName);
 				}
 			}

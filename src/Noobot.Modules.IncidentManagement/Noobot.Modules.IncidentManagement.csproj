@@ -3,11 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>netcoreapp2.0</TargetFramework>
 		<PackageId>Noobot.Modules.IncidentManagement</PackageId>
-		<PackageVersion>1.0.3</PackageVersion>
+		<PackageVersion>1.0.4</PackageVersion>
 		<Authors>Ashley Poole</Authors>
 		<Description>Incident Management module for Noobot framework. Allows incidents to be declared and tracked using Azure storage.</Description>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageReleaseNotes>Added functionality to set channel purpose when incident is declared which previously didn't work, aswell as new functionality to set topic.</PackageReleaseNotes>
+		<PackageReleaseNotes>Updated to static list of war room channels for incidents. Also misc bug fixes.</PackageReleaseNotes>
 		<PackageTags>Noobot Noobot.Modules Incident IncidentManagement IncidentResponse chatops chatbot bot</PackageTags>
 		<PackageProjectUrl>https://github.com/AshleyPoole/Noobot.Modules</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/AshleyPoole/Noobot.Modules</RepositoryUrl>

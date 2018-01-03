@@ -46,7 +46,7 @@ namespace Noobot.Modules.IncidentManagement
 
 				if (incidents.Results.Any())
 				{
-					return int.Parse(incidents.Results.OrderByDescending(x => x.RowKey).First().RowKey) + 1;
+					return int.Parse(incidents.Results.OrderByDescending(x => x.DeclaredDateTimeUtc).First().RowKey) + 1;
 					
 				}
 
@@ -61,10 +61,26 @@ namespace Noobot.Modules.IncidentManagement
 			return (Incident)this.incidentTable.ExecuteAsync(insertOperation).Result.Result;
 		}
 
-		internal Incident GetIncidentByChannel(string channelName)
+		internal Incident GetIncidentByChannelName(string channelName)
 		{
 			var query = new TableQuery<Incident>().Where(
 				TableQuery.GenerateFilterCondition(nameof(Incident.ChannelName), QueryComparisons.Equal, channelName));
+
+			TableContinuationToken token = null;
+			do
+			{
+				var incidents = this.incidentTable.ExecuteQuerySegmentedAsync(query, token).Result;
+				token = incidents.ContinuationToken;
+
+				return !incidents.Results.Any() ? null : incidents.Results.OrderByDescending(x => x.DeclaredDateTimeUtc).First();
+
+			} while (token != null);
+		}
+
+		internal Incident GetIncidentByChannelId(string channelId)
+		{
+			var query = new TableQuery<Incident>().Where(
+				TableQuery.GenerateFilterCondition(nameof(Incident.ChannelId), QueryComparisons.Equal, channelId));
 
 			TableContinuationToken token = null;
 			do
