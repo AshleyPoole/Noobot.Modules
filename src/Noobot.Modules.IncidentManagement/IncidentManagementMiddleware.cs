@@ -77,28 +77,35 @@ namespace Noobot.Modules.IncidentManagement
 				yield return incomingMessage.ReplyToChannel($"Please provide incident title. Help: {this.newIncidentHelpText}");
 			}
 
-			var channel = new Channel(
-				incomingMessage.Channel,
-				this.incidentManagementPlugin.GetUserFriendlyChannelName(incomingMessage.Channel));
+			//var channel = new Channel(
+			//	incomingMessage.Channel,
+			//	this.incidentManagementPlugin.GetUserFriendlyChannelName(incomingMessage.Channel));
 
-			if (channel.Name == this.incidentManagementPlugin.MainIncidentChannel)
-			{
-				yield return incomingMessage.ReplyToChannel($"Sorry, new incidents cannot be declared in this channel as bots are unable to create new channels. Please create a dedicated channel for this incident and declare the incident from there.");
-			}
+			//if (channel.Name != this.incidentManagementPlugin.MainIncidentChannel)
+			//{
+			//	yield return incomingMessage.ReplyToChannel($"Sorry, new incidents can only be declared in #{ this.incidentManagementPlugin.MainIncidentChannel } channel.");
+			//}
 
-			if (incomingMessage.ChannelType == ResponseType.DirectMessage)
-			{
-				yield return incomingMessage.ReplyToChannel($"Sorry, new incidents cannot be declared in direct messages. Create a public channel in order to declare incidents... We all want to take part!");
-			}
+			//if (incomingMessage.ChannelType == ResponseType.DirectMessage)
+			//{
+			//	yield return incomingMessage.ReplyToChannel($"Sorry, new incidents cannot be declared in direct messages. Create a public channel in order to declare incidents... We all want to take part!");
+			//}
 
 			var incidentText =
 				this.incidentManagementPlugin.GetIncidentText($"{Configuration.Prefix} new", incomingMessage.TargetedText);
 
-			var incident = this.incidentManagementPlugin.DeclareNewIncident(incidentText, incomingMessage.Username, channel);
+			var incident = this.incidentManagementPlugin.DeclareNewIncident(incidentText, incomingMessage.Username);
 
-			yield return incomingMessage.ReplyToChannel($"Incident #{incident.FriendlyId} succesfully declared and posted to #{ this.incidentManagementPlugin.MainIncidentChannel }.\n"
-														+ $"Remember to add people to this channel that may be able to help mitigate this incident. Run { this.resolveIncidentHelpText } after the incident is mitigated. \n"
-														+ $"Good luck!");
+			if (incident == null)
+			{
+				yield return
+					incomingMessage
+						.ReplyToChannel("Sorry, no warrooms are available so this incident cannot be created.");
+			}
+			else
+			{
+				yield return incomingMessage.ReplyToChannel($"Incident #{ incident.FriendlyId } has been declared and bound to #{ incident.ChannelName } channel.");
+			}
 		}
 
 		private IEnumerable<ResponseMessage> ResolveIncidentHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
@@ -134,8 +141,8 @@ namespace Noobot.Modules.IncidentManagement
 			}
 			else
 			{
-				yield return incomingMessage.ReplyToChannel($"Incident #{ incident.FriendlyId } succesfully closed. You can now archive the channel and prepare the postmortem on Jive.");
-
+				yield return incomingMessage.ReplyToChannel($"Incident #{ incident.FriendlyId } succesfully closed. Please prepare the postmortem on Jive using incident/postmortem id { incident.FriendlyId }.\n"
+					+ "Channel will now be marked as available.");
 			}
 		}
 

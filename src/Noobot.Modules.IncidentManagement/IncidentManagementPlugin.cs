@@ -22,6 +22,8 @@ namespace Noobot.Modules.IncidentManagement
 
 		private ISlackConnection SlackConnection { get; set; }
 
+		private string[] WarRooms { get; set; }
+
 		public IncidentManagementPlugin(IConfigReader configReader)
 		{
 			this.configReader = configReader;
@@ -32,9 +34,12 @@ namespace Noobot.Modules.IncidentManagement
 		{
 			this.MainIncidentChannel = this.configReader.GetConfigEntry<string>("incident:mainChannel");
 
+			this.WarRooms = this.configReader.GetConfigEntry<string>("incident:warRooms").Split(',');
+
 			var connector = new SlackConnector.SlackConnector();
 			this.SlackConnection = connector.Connect(this.configReader.SlackApiKey).Result;
 		}
+
 
 		public void Stop()
 		{
@@ -51,22 +56,30 @@ namespace Noobot.Modules.IncidentManagement
 		}
 		internal string GetUserFriendlyChannelName(string channel)
 		{
-			return this.SlackConnection.GetChannels().Result.FirstOrDefault(x => x.Id == channel)?.Name;
+			return this.SlackConnection.GetChannels().Result.FirstOrDefault(x => x.Id == channel)?.Name
+				.Replace("#", string.Empty);
 		}
 
-		internal Incident DeclareNewIncident(string incidentText, string reportedByUser, Channel channel)
+		internal Incident DeclareNewIncident(string incidentText, string reportedByUser)
 		{
-			var incident = new Incident(incidentText, channel, reportedByUser);
+			var assignedWarRoomChannel = this.GetAvailableWarRoomChannel();
+
+			if (assignedWarRoomChannel == null)
+			{
+				return null;
+			}
+
+			var incident = new Incident(incidentText, assignedWarRoomChannel, reportedByUser);
 			incident.SetRowKey(this.storageClient.GetNextRowKey(incident.PartitionKey));
 
 			incident = this.storageClient.PersistNewIncident(incident);
 
-			var title = $"INCIDENT DECLARED #{ incident.FriendlyId }";
-			var messageText = this.GetUnresolvedIncidentTextWithoutIncidentId(incident);
-
 			this.SetChannelPurposeBasedOnIncidentStatus(incident);
 			this.SetChannelTopicBasedOnIncidentStatus(incident);
-			this.SendIncidentChannelMessage(title, messageText, Configuration.UnresolvedIncidentColor);
+
+			var title = $"INCIDENT DECLARED #{ incident.FriendlyId }";
+			this.SendWarRoomIncidentChannelMessage(incident.ChannelName, this.GetNewIncidentTextForWarRoomChannel(incident));
+			this.SendMainIncidentChannelMessage(title, this.GetNewIncidentTextForMainIncidentChannel(incident), Configuration.UnresolvedIncidentColor);
 
 			return incident;
 		}
@@ -88,7 +101,7 @@ namespace Noobot.Modules.IncidentManagement
 			var messageText = this.GetResolvedIncidentTextWithoutIncidentId(incident);
 
 			this.SetChannelPurposeBasedOnIncidentStatus(incident);
-			this.SendIncidentChannelMessage(title, messageText, Configuration.ResolvedIncidentColor);
+			this.SendMainIncidentChannelMessage(title, messageText, Configuration.ResolvedIncidentColor);
 
 			return incident;
 		}
@@ -111,7 +124,7 @@ namespace Noobot.Modules.IncidentManagement
 
 			this.SetChannelPurposeBasedOnIncidentStatus(incident);
 			this.SetChannelTopicBasedOnIncidentStatus(incident);
-			this.SendIncidentChannelMessage(title, messageText, Configuration.ClosedIncidentColor);
+			this.SendMainIncidentChannelMessage(title, messageText, Configuration.ClosedIncidentColor);
 
 			return incident;
 		}
@@ -165,7 +178,7 @@ namespace Noobot.Modules.IncidentManagement
 			};
 		}
 
-		private void SendIncidentChannelMessage(string title, string messageText, string messageColor)
+		private void SendMainIncidentChannelMessage(string title, string messageText, string messageColor)
 		{
 			var chatHub = new SlackChatHub { Id = this.MainIncidentChannel };
 			var attachement = new SlackAttachment { Title = title, Text = messageText, ColorHex = messageColor };
@@ -174,12 +187,26 @@ namespace Noobot.Modules.IncidentManagement
 			this.SlackConnection.Say(message);
 		}
 
-		private string GetUnresolvedIncidentTextWithoutIncidentId(Incident incident)
+		private void SendWarRoomIncidentChannelMessage(string warRoomChannelName, string messageText)
+		{
+			var chatHub = new SlackChatHub { Id = warRoomChannelName };
+			var message = new BotMessage { ChatHub = chatHub, Text = messageText };
+
+			this.SlackConnection.Say(message);
+		}
+
+		private string GetNewIncidentTextForMainIncidentChannel(Incident incident)
 		{
 			return $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
 				+ $"Reported By: @{ incident.DeclaredBy }\n"
-				+ $"Channel: { incident.ChannelName }\n"
+				+ $"Bound To Channel: #{ incident.ChannelName }\n"
 				+ $"Description: { incident.Title }";
+		}
+
+		private string GetNewIncidentTextForWarRoomChannel(Incident incident)
+		{
+			return $"Incident #{ incident.FriendlyId } regarding '{ incident.Title }' has been declared by @{ incident.DeclaredBy } and bound to this channel.\n"
+				+ "Good luck with this incident and remember to add people to the channel that might be able to help.";
 		}
 
 		private string GetResolvedIncidentTextWithoutIncidentId(Incident incident)
@@ -187,7 +214,7 @@ namespace Noobot.Modules.IncidentManagement
 			return $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
 				+ $"Resolved Timestamp: { incident.ResolvedDateTimeUtc } UTC\n"
 				+ $"Resolved By: @{ incident.ResolvedBy }\n"
-				+ $"Channel: { incident.ChannelName }\n"
+				+ $"Channel: #{ incident.ChannelName }\n"
 				+ $"Description: { incident.Title }";
 		}
 
@@ -197,7 +224,7 @@ namespace Noobot.Modules.IncidentManagement
 					+ $"Resolved Timestamp: { incident.ResolvedDateTimeUtc } UTC\n"
 					+ $"Closed Timestamp: { incident.ClosedDateTimeUtc } UTC\n"
 					+ $"Closed By: @{ incident.ClosedBy }\n"
-					+ $"Channel: { incident.ChannelName }\n"
+					+ $"Channel: #{ incident.ChannelName }\n"
 					+ $"Description: { incident.Title }";
 		}
 
@@ -205,15 +232,15 @@ namespace Noobot.Modules.IncidentManagement
 		{
 			if (incident.Resolved && incident.Closed)
 			{
-				this.SlackConnection.SetChannelPurpose(
+				var result = this.SlackConnection.SetChannelPurpose(
 					incident.ChannelId,
-					$"Incident Warroom -- No active incident bound");
+					$"Incident Warroom -- No active incident bound").Result;
 			}
 			else
 			{
-				this.SlackConnection.SetChannelPurpose(
+				var result = this.SlackConnection.SetChannelPurpose(
 					incident.ChannelId,
-					$"INCIDENT #{ incident.FriendlyId } -- { incident.FriendlyStatus } -- { incident.Title }");
+					$"INCIDENT #{ incident.FriendlyId } -- { incident.FriendlyStatus } -- { incident.Title }").Result;
 			}
 		}
 
@@ -221,16 +248,32 @@ namespace Noobot.Modules.IncidentManagement
 		{
 			if (incident.Resolved && incident.Closed)
 			{
-				this.SlackConnection.SetChannelTopic(
+				var result = this.SlackConnection.SetChannelTopic(
 					incident.ChannelId,
-					string.Empty);
+					string.Empty).Result;
 			}
 			else
 			{
-				this.SlackConnection.SetChannelTopic(
+				var result = this.SlackConnection.SetChannelTopic(
 					incident.ChannelId,
-					$"INCIDENT #{ incident.FriendlyId }");
+					$"INCIDENT #{ incident.FriendlyId }").Result;
 			}
+		}
+
+		private Channel GetAvailableWarRoomChannel()
+		{
+			foreach (var warRoomName in this.WarRooms)
+			{
+				var lastInstanceForChannel = this.storageClient.GetIncidentByChannel(warRoomName);
+				if (lastInstanceForChannel == null || lastInstanceForChannel.Closed)
+				{
+					return new Channel(
+						this.SlackConnection.GetChannels().Result.FirstOrDefault(x => x.Name == $"#{ warRoomName }")?.Id,
+						warRoomName);
+				}
+			}
+
+			return null;
 		}
 	}
 }
