@@ -163,7 +163,7 @@ namespace Noobot.Modules.IncidentManagement
 
 		private List<Attachment> GetAttachmentsForClosedIncidents(List<Incident> incidents)
 		{
-			return incidents.Where(x => x.ResolvedDateTimeUtc != null).Select(
+			return incidents.Where(x => x.ClosedDateTimeUtc != null).Select(
 				incident => this.GenerateAttachment(incident, Configuration.ClosedIncidentColor)).ToList();
 		}
 
