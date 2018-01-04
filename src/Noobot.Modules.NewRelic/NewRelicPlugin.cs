@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using NewRelic;
 using NewRelic.Models;
 
 using Noobot.Core.Configuration;
+using Noobot.Core.MessagingPipeline.Response;
 using Noobot.Core.Plugins;
 
 namespace Noobot.Modules.NewRelic
@@ -30,65 +32,176 @@ namespace Noobot.Modules.NewRelic
 		{
 		}
 
-		internal static bool ApplicationTargetedCommandMisformed(string message)
+		internal static bool ApplicationDetailTargetedCommandMisformed(string message)
 		{
 			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length != 4;
 		}
 
-		internal string GetApplicationsText()
+		internal List<Attachment> GetApplications()
 		{
 			var applications = this.FetchApplications();
-
-			var applicationsMessage = string.Empty;
+			var applicationAttachments = new List<Attachment>();
 
 			foreach (var application in applications)
 			{
-				if (!string.IsNullOrWhiteSpace(applicationsMessage))
-				{
-					applicationsMessage += "\n";
-				}
+				var attachmentFields = new List<AttachmentField>
+										{
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.Id),
+												Value = application.Id.ToString()
+											},
+											new AttachmentField { IsShort = true, Title = nameof(application.Name), Value = application.Name },
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.IsReporting),
+												Value = application.IsReporting
+											},
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.HealthStatus),
+												Value = application.HealthStatus
+											}
+										};
 
-				applicationsMessage += $"ID: {application.Id}    Name: {application.Name}    HealthStatus: {application.HealthStatus}";
+				applicationAttachments.Add(
+					new Attachment
+					{
+						AttachmentFields = attachmentFields,
+						Color = GetAttachmentColourForHealth(application.HealthStatus)
+					});
 			}
 
-			return $"There are {applications.Count} applications in NewRelic. Those are:\n {applicationsMessage}";
+			return applicationAttachments;
 		}
 
-		internal string GetApplicationHealthText(Application application)
+		internal List<Attachment> GetAllApplicationsDetails()
 		{
-			var applicationMessage = $"HealthStatus: {application.HealthStatus}\n"
-									+ $"Language: {application.Language}\n"
-									+ $"IsReporting: {application.IsReporting}\n"
-									+ $"LastReportedDate: {application.LastReportedDate}\n"
-									+ $"ResponseTime: {application.Summary.ResponseTime} ms\n"
-									+ $"ErrorRate: {application.Summary.ErrorRate}\n"
-									+ $"Apendex: {application.Summary.ApdexScore} / {application.Summary.ApdexTarget} target\n";
-
-			return $"NewRelic application summary for {application.Id} ({application.Name}):\n {applicationMessage}";
+			return this.GetFormatedApplicationsDetails(this.FetchApplications());
 		}
 
-		internal string GetApplicationsSummaryText()
+		internal List<Attachment> GetUnhealthyApplicationsDetail()
 		{
-			var applicationsMessage = string.Empty;
+			var allApplications = this.FetchApplications();
+			var unhealthyApplications = allApplications.Where(x => x.HealthStatus != Configuration.NewRelicGoodStatus).ToList();
 
-			foreach (var application in this.FetchApplications())
+			return this.GetFormatedApplicationsDetails(unhealthyApplications);
+		}
+
+		internal List<Attachment> GetApplicationDetailsFiltered(string applicationName)
+		{
+			const string WildcardCharacter = "%";
+			List<Application> filteredApplications;
+
+			var applicationNameForChecking = applicationName.Replace(WildcardCharacter, string.Empty).ToLower();
+			var allApplications = this.FetchApplications();
+
+			if (applicationName.StartsWith(WildcardCharacter))
 			{
-				if (!string.IsNullOrWhiteSpace(applicationsMessage))
-				{
-					applicationsMessage += "\n\n";
-				}
-
-				applicationsMessage += $"*** {application.Id} ({application.Name}) ***\n"
-										+ $"HealthStatus: {application.HealthStatus}\n"
-										+ $"Language: {application.Language}\n"
-										+ $"IsReporting: {application.IsReporting}\n"
-										+ $"LastReportedDate: {application.LastReportedDate}\n"
-										+ $"ResponseTime: {application.Summary.ResponseTime} ms\n"
-										+ $"ErrorRate: {application.Summary.ErrorRate}\n"
-										+ $"Apendex: {application.Summary.ApdexScore} / {application.Summary.ApdexTarget} target";
+				filteredApplications =
+					allApplications.Where(x => x.Name.ToLower().EndsWith(applicationNameForChecking)).ToList();
+			}
+			else if (applicationName.EndsWith(WildcardCharacter))
+			{
+				filteredApplications =
+					allApplications.Where(x => x.Name.ToLower().StartsWith(applicationNameForChecking)).ToList();
+			}
+			else if (applicationName.StartsWith(WildcardCharacter) && applicationName.EndsWith(WildcardCharacter))
+			{
+				filteredApplications =
+					allApplications.Where(x => x.Name.ToLower().Contains(applicationNameForChecking)).ToList();
+			}
+			else
+			{
+				filteredApplications = allApplications.Where(x => x.Name.ToLower() == applicationNameForChecking).ToList();
 			}
 
-			return $"NewRelic summary for all applications:\n {applicationsMessage}";
+			return this.GetFormatedApplicationsDetails(filteredApplications);
+		}
+
+		private List<Attachment> GetFormatedApplicationsDetails(List<Application> applications)
+		{
+			var applicationAttachments = new List<Attachment>();
+
+			foreach (var application in applications)
+			{
+				var attachmentFields = new List<AttachmentField>
+										{
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.Id),
+												Value = application.Id.ToString()
+											},
+											new AttachmentField { IsShort = true, Title = nameof(application.Name), Value = application.Name },
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.Language),
+												Value = application.Language
+											},
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.HealthStatus),
+												Value = application.HealthStatus
+											},
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.IsReporting),
+												Value = application.IsReporting
+											},
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.LastReportedDate),
+												Value = $"{ application.LastReportedDate.UtcDateTime } UTC"
+											},
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.Summary.ErrorRate),
+												Value = $"{application.Summary.ErrorRate}%"
+											},
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.Summary.ResponseTime),
+												Value = $"{application.Summary.ResponseTime}ms"
+											},
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.Summary.ApdexScore),
+												Value = $"{ application.Summary.ApdexScore} / {application.Summary.ApdexTarget} target"
+											},
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = $"{nameof(application.EndUserSummary.ApdexScore)} {nameof(application.EndUserSummary)}",
+												Value =
+													$"{application.EndUserSummary?.ApdexScore} / {application.EndUserSummary?.ApdexTarget} target"
+											},
+											new AttachmentField
+											{
+												IsShort = true,
+												Title = nameof(application.Summary.Throughput),
+												Value = $"{application.Summary.Throughput}rpm"
+											}
+										};
+
+				applicationAttachments.Add(new Attachment
+								{
+									AttachmentFields = attachmentFields,
+									Color = GetAttachmentColourForHealth(application.HealthStatus)
+								});
+			}
+
+			return applicationAttachments;
 		}
 
 		internal Application GetApplicationFromTargetedText(string targetedText)
@@ -99,6 +212,12 @@ namespace Noobot.Modules.NewRelic
 			var applications = this.FetchApplications();
 			return applications.FirstOrDefault(
 				x => x.Id == applicationId);
+		}
+
+		internal string GetApplicationNameFromTargetedText(string targetedText)
+		{
+			var applicationName = targetedText.Split(" ", StringSplitOptions.RemoveEmptyEntries)[3];
+			return applicationName;
 		}
 
 		internal string GetSummaryMetricsText(int applicationId)
@@ -130,6 +249,21 @@ namespace Noobot.Modules.NewRelic
 		{
 			var newRelic = this.GetNewRelicClient();
 			return newRelic.GetApplications().Result.Applications;
+		}
+
+		private static string GetAttachmentColourForHealth(string health)
+		{
+			switch (health)
+			{
+				case Configuration.NewRelicGoodStatus:
+					return Configuration.NewRelicGoodStatusColor;
+				case Configuration.NewRelicWarningStatus:
+					return Configuration.NewRelicWarningStatusColor;
+				case Configuration.NewRelicBadStatus:
+					return Configuration.NewRelicBadStatusColor;
+				default:
+					return Configuration.NewRelicUnknownStatusColor;
+			}
 		}
 	}
 }
