@@ -25,7 +25,7 @@ namespace Noobot.Modules.Dns
 			{
 				ipAddresses = System.Net.Dns.GetHostAddresses(hostToLookup);
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
 				ipAddresses = null;
 			}

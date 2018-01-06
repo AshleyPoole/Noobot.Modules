@@ -44,7 +44,7 @@ namespace Noobot.Modules.Dns
 			}
 
 			var hostToLookup = DnsPlugin.GetHostFromMessage(incomingMessage.TargetedText);
-			var ipAddresses = DnsPlugin.LookUpIpFromCommandText(incomingMessage.TargetedText);
+			var ipAddresses = DnsPlugin.LookUpIpFromCommandText(hostToLookup);
 
 			if (ipAddresses == null)
 			{
