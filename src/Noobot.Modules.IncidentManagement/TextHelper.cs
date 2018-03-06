@@ -25,11 +25,14 @@ namespace Noobot.Modules.IncidentManagement
 
 		public static string GetResolvedIncidentTextWithoutIncidentId(Incident incident)
 		{
+			var postmortemLink = string.IsNullOrWhiteSpace(incident.PostmortermLink) ? "TBD" : incident.PostmortermLink;
+
 			return $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
 					+ $"Resolved Timestamp: { incident.ResolvedDateTimeUtc } UTC\n"
 					+ $"Resolved By: @{ incident.ResolvedBy }\n"
 					+ $"Channel: #{ incident.ChannelName }\n"
-					+ $"Description: { incident.Title }";
+					+ $"Description: { incident.Title }\n"
+					+ $"Postmortem Link: { postmortemLink }";
 		}
 
 		public static string GetIncidentPostmortemTextWithoutIncidentId(Incident incident)
