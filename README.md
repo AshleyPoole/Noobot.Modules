@@ -70,6 +70,6 @@ Example bot configuration:
 		"slack:apiToken": "YOUR_API_KEY",
 		"incident:mainChannel": "incidents",
 		"incident:azureConnectionString": "DefaultEndpointsProtocol=https;AccountName=YOUR_ACCOUNT_NAME;AccountKey=YOUR_ACCOUNT_KEY;EndpointSuffix=YOUR_ENDPOINT_SUFFIX",
-		"incident:additionalResolveText": "You can create a postmortem by clicking this link [insert link]."
+		"incident:postmortemTemplateLink": "http://mywebsite.com/postmortem-template"
 	}
 ```
