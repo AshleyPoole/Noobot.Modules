@@ -10,6 +10,8 @@ namespace Noobot.Modules.IncidentManagement
 
 		public const string ResolvedIncidentColor = "good";
 
+		public const string PostmortemIncidentColor = "#439FE0";
+
 		public const string ClosedIncidentColor = "#439FE0";
 
 		public const string Whitespace = " ";

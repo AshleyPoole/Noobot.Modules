@@ -17,6 +17,8 @@ namespace Noobot.Modules.IncidentManagement
 
 		private readonly string resolveIncidentHelpText = $"`{Configuration.Prefix} resolve`";
 
+		private readonly string postmortemIncidentHelpText = $"`{Configuration.Prefix} postmortem`";
+
 		private readonly string closeIncidentHelpText = $"`{Configuration.Prefix} close`";
 
 		private readonly string listActiveIncidentHelpText = $"`{Configuration.Prefix} list active`";
@@ -41,6 +43,13 @@ namespace Noobot.Modules.IncidentManagement
 											ValidHandles = ExactMatchHandle.For($"{Configuration.Prefix} resolve"),
 											EvaluatorFunc = this.ResolveIncidentHandler,
 											Description = $"Resolve the incident associated with current channel. {this.resolveIncidentHelpText}",
+											VisibleInHelp = true
+										},
+										new HandlerMapping
+										{
+											ValidHandles = StartsWithHandle.For($"{Configuration.Prefix} postmortem"),
+											EvaluatorFunc = this.AddPostmortemLinkToIncidentHandler,
+											Description = $"Adds the postmortem link to the incident associated with current channel. {this.postmortemIncidentHelpText}",
 											VisibleInHelp = true
 										},
 										new HandlerMapping
@@ -71,7 +80,7 @@ namespace Noobot.Modules.IncidentManagement
 		{
 			yield return incomingMessage.IndicateTypingOnChannel();
 
-			if (!this.incidentManagementPlugin.NewIncidentCommandWellFormatted(incomingMessage.TargetedText))
+			if (!this.incidentManagementPlugin.IncidentCommandUserInputWellFormatted(incomingMessage.TargetedText))
 			{
 				yield return incomingMessage.ReplyToChannel($"Please provide incident title. Help: {this.newIncidentHelpText}");
 			}
@@ -105,7 +114,36 @@ namespace Noobot.Modules.IncidentManagement
 			}
 			else
 			{
-				yield return incomingMessage.ReplyToChannel($"Incident #{ incident.FriendlyId } succesfully resolved. Please run { this.closeIncidentHelpText } once the incident has been stood down.");
+				yield return incomingMessage.ReplyToChannel(
+					$"Incident #{incident.FriendlyId} succesfully resolved. Please run {this.postmortemIncidentHelpText} followed "
+					+ $"by the postmortem link to add the postmortem to this incident if not already done. " + this.incidentManagementPlugin.AdditionalResolveText);
+			}
+		}
+
+		private IEnumerable<ResponseMessage> AddPostmortemLinkToIncidentHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
+		{
+			yield return incomingMessage.IndicateTypingOnChannel();
+
+			if (!this.incidentManagementPlugin.IncidentCommandUserInputWellFormatted(incomingMessage.TargetedText))
+			{
+				yield return incomingMessage.ReplyToChannel($"Please provide postmortem link. Help: {this.postmortemIncidentHelpText}");
+			}
+
+			var postmortemLink = TextHelper.GetIncidentText($"{Configuration.Prefix} postmortem", incomingMessage.TargetedText);
+
+			var incident = this.incidentManagementPlugin.UpdateIncidentWithPostmortem(postmortemLink, incomingMessage.Username, incomingMessage.Channel);
+
+			if (incident == null)
+			{
+				yield return
+					incomingMessage
+						.ReplyToChannel("Sorry, no open incident was found attached to this channel. Was the incident already closed?");
+			}
+			else
+			{
+				yield return incomingMessage.ReplyToChannel(
+					$"Incident #{incident.FriendlyId} has been updated with a postmortem link. "
+					+ $"Once the postmortem and incident are complete, please run {this.closeIncidentHelpText} to close the incident.");
 			}
 		}
 
@@ -118,8 +156,8 @@ namespace Noobot.Modules.IncidentManagement
 			if (incident == null)
 			{
 				yield return incomingMessage.ReplyToChannel(
-					$"Sorry, no incident was found attached to this channel that could be closed. Was the incident resolved yet or already closed? "
-					+ $"If it the incident hasn't been marked as resolved, run { this.resolveIncidentHelpText } first.");
+					$"Sorry, no incident was found attached to this channel that could be closed. Was the incident resolved yet, already closed or missing the postmortem? "
+					+ $"If it the incident hasn't been marked as resolved, run {this.resolveIncidentHelpText} first. If the incident is resolved but missing the postmortem, run {this.postmortemIncidentHelpText} along with the postmortem link first.");
 			}
 			else
 			{

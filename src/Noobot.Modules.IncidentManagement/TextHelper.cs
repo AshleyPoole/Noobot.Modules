@@ -32,6 +32,16 @@ namespace Noobot.Modules.IncidentManagement
 					+ $"Description: { incident.Title }";
 		}
 
+		public static string GetIncidentPostmortemTextWithoutIncidentId(Incident incident)
+		{
+			return $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"
+					+ $"Resolved Timestamp: { incident.ResolvedDateTimeUtc } UTC\n"
+					+ $"Postmortem Link: { incident.PostmortermLink }\n"
+					+ $"Postmortem By: @{ incident.PostmortermAddedBy }\n"
+					+ $"Channel: #{ incident.ChannelName }\n"
+					+ $"Description: { incident.Title }";
+		}
+
 		public static string GetClosedIncidentTextWithoutIncidentId(Incident incident)
 		{
 			return $"Declared Timestamp: { incident.DeclaredDateTimeUtc } UTC\n"

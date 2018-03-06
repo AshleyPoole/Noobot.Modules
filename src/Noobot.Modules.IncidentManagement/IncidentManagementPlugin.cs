@@ -14,9 +14,11 @@ namespace Noobot.Modules.IncidentManagement
 {
 	public class IncidentManagementPlugin : IPlugin
 	{
-		private readonly IConfigReader configReader;
+		public string AdditionalResolveText { get; private set; }
 
-		public string MainIncidentChannel;
+		private string mainIncidentChannel;
+
+		private readonly IConfigReader configReader;
 
 		private readonly IncidentManagementStorageClient storageClient;
 
@@ -32,7 +34,8 @@ namespace Noobot.Modules.IncidentManagement
 
 		public void Start()
 		{
-			this.MainIncidentChannel = this.configReader.GetConfigEntry<string>("incident:mainChannel");
+			this.mainIncidentChannel = this.configReader.GetConfigEntry<string>("incident:mainChannel");
+			this.AdditionalResolveText = this.configReader.GetConfigEntry<string>("incident:additionalResolveText");
 
 			this.WarRooms = this.configReader.GetConfigEntry<string>("incident:warRooms").Split(',');
 
@@ -40,20 +43,13 @@ namespace Noobot.Modules.IncidentManagement
 			this.SlackConnection = connector.Connect(this.configReader.SlackApiKey).Result;
 		}
 
-
 		public void Stop()
 		{
 		}
 
-		internal bool NewIncidentCommandWellFormatted(string message)
+		internal bool IncidentCommandUserInputWellFormatted(string message)
 		{
 			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length >= 3;
-		}
-
-		internal string GetUserFriendlyChannelName(string channel)
-		{
-			return this.SlackConnection.GetChannels().Result.FirstOrDefault(x => x.Id == channel)?.Name
-				.Replace("#", string.Empty);
 		}
 
 		internal Incident DeclareNewIncident(string incidentText, string reportedByUser)
@@ -105,11 +101,32 @@ namespace Noobot.Modules.IncidentManagement
 			return incident;
 		}
 
+		internal Incident UpdateIncidentWithPostmortem(string postmortemLink, string addedByUser, string incidentChannelId)
+		{
+			var incident = this.storageClient.GetIncidentByChannelId(incidentChannelId);
+
+			if (incident == null || incident.ClosedDateTimeUtc != null)
+			{
+				return null;
+			}
+
+			incident.AddPostmortem(addedByUser, postmortemLink);
+
+			this.storageClient.UpdateIncident(incident);
+
+			var title = $"INCIDENT POSTMORTEM ADDED #{ incident.FriendlyId }";
+			var messageText = TextHelper.GetIncidentPostmortemTextWithoutIncidentId(incident);
+
+			this.SendMainIncidentChannelMessage(title, messageText, Configuration.PostmortemIncidentColor);
+
+			return incident;
+		}
+
 		internal Incident CloseIncident(string resolvedBy, string incidentChannelId)
 		{
 			var incident = this.storageClient.GetIncidentByChannelId(incidentChannelId);
 
-			if (incident?.ResolvedDateTimeUtc == null || incident.ClosedDateTimeUtc != null)
+			if (incident?.ResolvedDateTimeUtc == null || incident.ClosedDateTimeUtc != null || incident.PostmortemAddedDateTimeUtc == null)
 			{
 				return null;
 			}
@@ -179,7 +196,7 @@ namespace Noobot.Modules.IncidentManagement
 
 		private void SendMainIncidentChannelMessage(string title, string messageText, string messageColor)
 		{
-			var chatHub = new SlackChatHub { Id = this.MainIncidentChannel };
+			var chatHub = new SlackChatHub { Id = this.mainIncidentChannel };
 			var attachement = new SlackAttachment { Title = title, Text = messageText, ColorHex = messageColor };
 			var message = new BotMessage { ChatHub = chatHub, Attachments = new List<SlackAttachment> { attachement } };
 

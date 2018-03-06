@@ -43,6 +43,12 @@ namespace Noobot.Modules.IncidentManagement.Models
 
 		public DateTime? ResolvedDateTimeUtc { get; set; }
 
+		public string PostmortermLink { get; set; }
+
+		public string PostmortermAddedBy { get; set; }
+
+		public DateTime? PostmortemAddedDateTimeUtc { get; set; }
+
 		public bool Closed { get; set; }
 
 		public string ClosedBy { get; set; }
@@ -81,6 +87,13 @@ namespace Noobot.Modules.IncidentManagement.Models
 			this.ResolvedDateTimeUtc = DateTime.UtcNow;
 			this.ResolvedBy = resolvedBy;
 			this.Resolved = true;
+		}
+
+		public void AddPostmortem(string addedBy, string postmortemLink)
+		{
+			this.PostmortemAddedDateTimeUtc = DateTime.UtcNow;
+			this.PostmortermAddedBy = addedBy;
+			this.PostmortermLink = postmortemLink;
 		}
 
 		public void MarkAsClosed(string closedBy)
