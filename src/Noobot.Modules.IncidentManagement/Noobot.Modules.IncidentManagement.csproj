@@ -3,11 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>netcoreapp2.0</TargetFramework>
 		<PackageId>Noobot.Modules.IncidentManagement</PackageId>
-		<PackageVersion>1.0.7</PackageVersion>
+		<PackageVersion>1.0.8</PackageVersion>
 		<Authors>Ashley Poole</Authors>
 		<Description>Incident Management module for Noobot framework. Allows incidents to be declared and tracked using Azure storage.</Description>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageReleaseNotes>Tweaked the postmortem message.</PackageReleaseNotes>
+		<PackageReleaseNotes>Tweaked the postmortem link and updated Azure storage package.</PackageReleaseNotes>
 		<PackageTags>Noobot Noobot.Modules Incident IncidentManagement IncidentResponse chatops chatbot bot</PackageTags>
 		<PackageProjectUrl>https://github.com/AshleyPoole/Noobot.Modules</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/AshleyPoole/Noobot.Modules</RepositoryUrl>
@@ -20,7 +20,7 @@
 	<ItemGroup>
 		<PackageReference Include="Noobot.Core" Version="3.1.55" />
 		<PackageReference Include="SlackConnector" Version="4.1.52" />
-		<PackageReference Include="WindowsAzure.Storage" Version="7.2.1" />
+		<PackageReference Include="WindowsAzure.Storage" Version="8.7.0" />
 	</ItemGroup>
 
 </Project>

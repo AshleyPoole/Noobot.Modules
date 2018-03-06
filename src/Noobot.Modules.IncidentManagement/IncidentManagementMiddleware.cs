@@ -116,7 +116,8 @@ namespace Noobot.Modules.IncidentManagement
 			{
 				yield return incomingMessage.ReplyToChannel(
 					$"Incident #{incident.FriendlyId} succesfully resolved. Please run {this.postmortemIncidentHelpText} followed "
-					+ $"by the postmortem link to add the postmortem to this incident if not already done. " + this.incidentManagementPlugin.AdditionalResolveText);
+					+ $"by the postmortem link to add the postmortem to this incident, if not already done. "
+					+ $"To create a new postmortem using the template, please go here { this.incidentManagementPlugin.PostmortemTemplateLink }.");
 			}
 		}
 

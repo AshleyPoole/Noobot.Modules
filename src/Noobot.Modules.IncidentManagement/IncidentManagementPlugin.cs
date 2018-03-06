@@ -14,7 +14,7 @@ namespace Noobot.Modules.IncidentManagement
 {
 	public class IncidentManagementPlugin : IPlugin
 	{
-		public string AdditionalResolveText { get; private set; }
+		public string PostmortemTemplateLink { get; private set; }
 
 		private string mainIncidentChannel;
 
@@ -35,7 +35,7 @@ namespace Noobot.Modules.IncidentManagement
 		public void Start()
 		{
 			this.mainIncidentChannel = this.configReader.GetConfigEntry<string>("incident:mainChannel");
-			this.AdditionalResolveText = this.configReader.GetConfigEntry<string>("incident:additionalResolveText");
+			this.PostmortemTemplateLink = this.configReader.GetConfigEntry<string>("incident:postmortemTemplateLink");
 
 			this.WarRooms = this.configReader.GetConfigEntry<string>("incident:warRooms").Split(',');
 
