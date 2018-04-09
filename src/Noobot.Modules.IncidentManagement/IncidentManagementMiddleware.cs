@@ -13,6 +13,8 @@ namespace Noobot.Modules.IncidentManagement
 	{
 		private readonly IncidentManagementPlugin incidentManagementPlugin;
 
+		private readonly ILog log;
+
 		private readonly string newIncidentHelpText = $"`{Configuration.Prefix} new`";
 
 		private readonly string resolveIncidentHelpText = $"`{Configuration.Prefix} resolve`";
@@ -29,6 +31,7 @@ namespace Noobot.Modules.IncidentManagement
 			: base(next)
 		{
 			this.incidentManagementPlugin = incidentManagementPlugin;
+			this.log = log;
 			this.HandlerMappings = new[]
 									{
 										new HandlerMapping

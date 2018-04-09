@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Common.Logging;
+
 using Noobot.Core.Configuration;
 using Noobot.Core.Plugins;
 using Noobot.Modules.IncidentManagement.Models;
@@ -20,15 +22,18 @@ namespace Noobot.Modules.IncidentManagement
 
 		private readonly IConfigReader configReader;
 
+		private readonly ILog log;
+
 		private readonly IncidentManagementStorageClient storageClient;
 
 		private ISlackConnection SlackConnection { get; set; }
 
 		private string[] WarRooms { get; set; }
 
-		public IncidentManagementPlugin(IConfigReader configReader)
+		public IncidentManagementPlugin(IConfigReader configReader, ILog log)
 		{
 			this.configReader = configReader;
+			this.log = log;
 			this.storageClient = new IncidentManagementStorageClient(configReader);
 		}
 
@@ -41,6 +46,8 @@ namespace Noobot.Modules.IncidentManagement
 
 			var connector = new SlackConnector.SlackConnector();
 			this.SlackConnection = connector.Connect(this.configReader.SlackApiKey).Result;
+
+			this.log.Info("(IncidentModule) started up.");
 		}
 
 		public void Stop()
@@ -58,23 +65,34 @@ namespace Noobot.Modules.IncidentManagement
 
 			if (assignedWarRoomChannel == null)
 			{
+				this.log.Info($"(IncidentModule) Found no available channels for a new incident being declared by {reportedByUser}.");
 				return null;
 			}
+
+			this.log.Info($"(IncidentModule) Found channel {assignedWarRoomChannel} for new incident declared by {reportedByUser}");
 
 			var incident = new Incident(incidentText, assignedWarRoomChannel, reportedByUser);
 			incident.SetRowKey(this.storageClient.GetNextRowKey(incident.PartitionKey));
 
 			incident = this.storageClient.PersistNewIncident(incident);
 
+			this.log.Info($"(IncidentModule) Declared new incident for {reportedByUser} with incidentId:{incident.Id}");
+
 			this.SetChannelPurposeBasedOnIncidentStatus(incident);
 			this.SetChannelTopicBasedOnIncidentStatus(incident);
 
+			this.log.Info($"(IncidentModule) Warroom {incident.ChannelName} topic and purpose has been updated for incidentId:{incident.Id}");
+
 			var title = $"INCIDENT DECLARED #{ incident.FriendlyId }";
 			this.SendWarRoomIncidentChannelMessage(incident.ChannelName, TextHelper.GetNewIncidentTextForWarRoomChannel(incident));
+			this.log.Info($"(IncidentModule) Warrom {incident.ChannelName} has been updated with incident text for incidentId:{incident.Id}");
+
 			this.SendMainIncidentChannelMessage(
 				title,
 				TextHelper.GetNewIncidentTextForMainIncidentChannel(incident),
 				Configuration.UnresolvedIncidentColor);
+
+			this.log.Info($"(IncidentModule) Sent notification to main incidents channel with summary for incidentId:{incident.Id}");
 
 			return incident;
 		}
