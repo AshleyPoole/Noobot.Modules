@@ -1,13 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netcoreapp2.0</TargetFramework>
 		<PackageId>Noobot.Modules.NewRelic</PackageId>
-		<PackageVersion>1.0.3</PackageVersion>
+		<PackageVersion>1.0.4</PackageVersion>
 		<Authors>Ashley Poole</Authors>
 		<Description>NewRelic module for Noobot framework</Description>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageReleaseNotes>Misc updates.</PackageReleaseNotes>
+		<PackageReleaseNotes>Fix issue posting to slack with more than 10 applications (attachments) returned.</PackageReleaseNotes>
 		<PackageTags>Noobot Noobot.Modules NewRelic chatops chatbot bot</PackageTags>
 		<PackageProjectUrl>https://github.com/AshleyPoole/Noobot.Modules</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/AshleyPoole/Noobot.Modules</RepositoryUrl>
@@ -18,6 +18,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="morelinq" Version="3.0.0-beta-2" />
 		<PackageReference Include="NewRelic.RestApi" Version="2.0.0-beta2" />
 		<PackageReference Include="Noobot.Core" Version="3.1.55" />
 		<PackageReference Include="PortableRest" Version="4.0.0-beta1.12" />

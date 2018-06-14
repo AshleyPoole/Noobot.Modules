@@ -4,6 +4,8 @@ using System.Linq;
 
 using Common.Logging;
 
+using MoreLinq;
+
 using Noobot.Core.MessagingPipeline.Middleware;
 using Noobot.Core.MessagingPipeline.Middleware.ValidHandles;
 using Noobot.Core.MessagingPipeline.Request;
@@ -82,7 +84,7 @@ namespace Noobot.Modules.NewRelic
 				title = "An exception occurred when retrieving an list of the applications from NewRelic.";
 			}
 
-			yield return incomingMessage.ReplyToChannel(title, applicationAttachments);
+			foreach (var responseMessage in ChuckAttachmentsAndReplyToChannel(incomingMessage, applicationAttachments, title)) yield return responseMessage;
 		}
 
 		private IEnumerable<ResponseMessage> ApplicationsDetailHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
@@ -104,7 +106,7 @@ namespace Noobot.Modules.NewRelic
 				title = "An exception occurred when retrieving an list of the applications from NewRelic.";
 			}
 
-			yield return incomingMessage.ReplyToChannel(title, applicationAttachments);
+			foreach (var responseMessage in ChuckAttachmentsAndReplyToChannel(incomingMessage, applicationAttachments, title)) yield return responseMessage;
 		}
 
 		private IEnumerable<ResponseMessage> UnhealthyApplicationsDetailHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
@@ -128,7 +130,7 @@ namespace Noobot.Modules.NewRelic
 				title = "An exception occurred when retrieving an list of the applications from NewRelic.";
 			}
 
-			yield return incomingMessage.ReplyToChannel(title, applicationAttachments);
+			foreach (var responseMessage in ChuckAttachmentsAndReplyToChannel(incomingMessage, applicationAttachments, title)) yield return responseMessage;
 		}
 
 		private IEnumerable<ResponseMessage> ApplicationDetailHandler(IncomingMessage incomingMessage, IValidHandle matchedHandle)
@@ -151,9 +153,11 @@ namespace Noobot.Modules.NewRelic
 			}
 			else
 			{
-				yield return incomingMessage.ReplyToChannel(
-					$"There were {applicationAttachments.Count} application(s) found for that name. They are:",
-					applicationAttachments);
+				foreach (var responseMessage in ChuckAttachmentsAndReplyToChannel(
+					incomingMessage,
+					applicationAttachments,
+					$"There were {applicationAttachments.Count} application(s) found for that name. They are:"))
+					yield return responseMessage;
 			}
 		}
 
@@ -177,6 +181,27 @@ namespace Noobot.Modules.NewRelic
 			//}
 
 			//yield return incomingMessage.ReplyToChannel(this.newRelicPlugin.GetSummaryMetricsText(application.Id));
+		}
+
+		private static IEnumerable<ResponseMessage> ChuckAttachmentsAndReplyToChannel(
+			IncomingMessage incomingMessage,
+			List<Attachment> applicationAttachments,
+			string title)
+		{
+			var firstBatch = true;
+
+			foreach (var chuckedAttachments in applicationAttachments.Batch(10))
+			{
+				var messageText = string.Empty;
+
+				if (firstBatch)
+				{
+					firstBatch = false;
+					messageText = title;
+				}
+
+				yield return incomingMessage.ReplyToChannel(messageText, chuckedAttachments.ToList());
+			}
 		}
 	}
 }
