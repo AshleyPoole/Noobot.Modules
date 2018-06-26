@@ -57,7 +57,7 @@ Nothing special required at this time.
 <br>
 
 ## Incident Module
-Allows editing of a RIP on the load balancer, changing it's state using the `drain`, `halt` and `online` commands.
+Adds ability to manage incidents and keeps track of status including postmortem links.
 
 ### Example Command(s)
 `@bot incident new The web server is offline`
@@ -71,5 +71,23 @@ Example bot configuration:
 		"incident:mainChannel": "incidents",
 		"incident:azureConnectionString": "DefaultEndpointsProtocol=https;AccountName=YOUR_ACCOUNT_NAME;AccountKey=YOUR_ACCOUNT_KEY;EndpointSuffix=YOUR_ENDPOINT_SUFFIX",
 		"incident:postmortemTemplateLink": "http://mywebsite.com/postmortem-template"
+	}
+```
+
+<br>
+
+## Cloudflare Module
+Allows purging of Cloudflare cache for a given zone or a particular cache tag within a zone.
+
+### Example Command(s)
+`@bot cloudflare purge zone ashleypoole.co.uk`
+
+### Configuration
+```
+	"Bot": {
+		"slack:apiToken": "YOUR_API_KEY",
+		"cloudflare:authemail": "YOUR_EMAIL_ADDRESS",
+		"cloudflare:authkey": "YOUR_CLOUDFLARE_AUTH_KEY",
+		"cloudflare:apiurl": "https://api.cloudflare.com/client/v4"
 	}
 ```
