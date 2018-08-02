@@ -99,7 +99,12 @@ namespace Noobot.Modules.NewRelic
 			var applicationNameForChecking = applicationName.Replace(WildcardCharacter, string.Empty).ToLower();
 			var allApplications = this.FetchApplications();
 
-			if (applicationName.StartsWith(WildcardCharacter))
+			if (applicationName.StartsWith(WildcardCharacter) && applicationName.EndsWith(WildcardCharacter))
+			{
+				filteredApplications =
+					allApplications.Where(x => x.Name.ToLower().Contains(applicationNameForChecking)).ToList();
+			}
+			else if (applicationName.StartsWith(WildcardCharacter))
 			{
 				filteredApplications =
 					allApplications.Where(x => x.Name.ToLower().EndsWith(applicationNameForChecking)).ToList();
@@ -108,11 +113,6 @@ namespace Noobot.Modules.NewRelic
 			{
 				filteredApplications =
 					allApplications.Where(x => x.Name.ToLower().StartsWith(applicationNameForChecking)).ToList();
-			}
-			else if (applicationName.StartsWith(WildcardCharacter) && applicationName.EndsWith(WildcardCharacter))
-			{
-				filteredApplications =
-					allApplications.Where(x => x.Name.ToLower().Contains(applicationNameForChecking)).ToList();
 			}
 			else
 			{
