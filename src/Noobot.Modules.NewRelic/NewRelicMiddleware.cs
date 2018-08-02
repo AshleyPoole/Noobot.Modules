@@ -196,7 +196,7 @@ namespace Noobot.Modules.NewRelic
 				yield return incomingMessage.ReplyToChannel(title);
 			}
 
-			foreach (var chuckedAttachments in attachments.Batch(10))
+			foreach (var chuckedAttachments in attachments.Batch(5))
 			{
 				var messageText = string.Empty;
 

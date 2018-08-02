@@ -86,7 +86,7 @@ namespace Noobot.Modules.NewRelic
 		internal List<Attachment> GetUnhealthyApplicationsDetail()
 		{
 			var allApplications = this.FetchApplications();
-			var unhealthyApplications = allApplications.Where(x => x.HealthStatus != Configuration.NewRelicGoodStatus).ToList();
+			var unhealthyApplications = allApplications.Where(x => x.HealthStatus == Configuration.NewRelicBadStatus).ToList();
 
 			return this.GetFormatedApplicationsDetails(unhealthyApplications);
 		}
@@ -165,19 +165,19 @@ namespace Noobot.Modules.NewRelic
 											{
 												IsShort = true,
 												Title = nameof(application.Summary.ErrorRate),
-												Value = $"{application.Summary.ErrorRate}%"
+												Value = $"{application.Summary?.ErrorRate}%"
 											},
 											new AttachmentField
 											{
 												IsShort = true,
 												Title = nameof(application.Summary.ResponseTime),
-												Value = $"{application.Summary.ResponseTime}ms"
+												Value = $"{application.Summary?.ResponseTime}ms"
 											},
 											new AttachmentField
 											{
 												IsShort = true,
 												Title = nameof(application.Summary.ApdexScore),
-												Value = $"{ application.Summary.ApdexScore} / {application.Summary.ApdexTarget} target"
+												Value = $"{ application.Summary?.ApdexScore} / {application.Summary?.ApdexTarget} target"
 											},
 											new AttachmentField
 											{
@@ -190,7 +190,7 @@ namespace Noobot.Modules.NewRelic
 											{
 												IsShort = true,
 												Title = nameof(application.Summary.Throughput),
-												Value = $"{application.Summary.Throughput}rpm"
+												Value = $"{application.Summary?.Throughput}rpm"
 											}
 										};
 
