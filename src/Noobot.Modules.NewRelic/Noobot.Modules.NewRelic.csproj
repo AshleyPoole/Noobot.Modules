@@ -3,11 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>netcoreapp2.0</TargetFramework>
 		<PackageId>Noobot.Modules.NewRelic</PackageId>
-		<PackageVersion>1.0.4</PackageVersion>
+		<PackageVersion>1.0.5</PackageVersion>
 		<Authors>Ashley Poole</Authors>
 		<Description>NewRelic module for Noobot framework</Description>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageReleaseNotes>Fix issue posting to slack with more than 10 applications (attachments) returned.</PackageReleaseNotes>
+		<PackageReleaseNotes>Fix issue posting to slack with less than 10 applications. Also fixed pattern matching bug.</PackageReleaseNotes>
 		<PackageTags>Noobot Noobot.Modules NewRelic chatops chatbot bot</PackageTags>
 		<PackageProjectUrl>https://github.com/AshleyPoole/Noobot.Modules</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/AshleyPoole/Noobot.Modules</RepositoryUrl>

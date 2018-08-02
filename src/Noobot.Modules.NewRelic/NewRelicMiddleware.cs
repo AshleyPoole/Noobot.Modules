@@ -185,12 +185,18 @@ namespace Noobot.Modules.NewRelic
 
 		private static IEnumerable<ResponseMessage> ChuckAttachmentsAndReplyToChannel(
 			IncomingMessage incomingMessage,
-			List<Attachment> applicationAttachments,
+			IEnumerable<Attachment> applicationAttachments,
 			string title)
 		{
 			var firstBatch = true;
+			var attachments = applicationAttachments.ToList();
 
-			foreach (var chuckedAttachments in applicationAttachments.Batch(10))
+			if (!attachments.Any())
+			{
+				yield return incomingMessage.ReplyToChannel(title);
+			}
+
+			foreach (var chuckedAttachments in attachments.Batch(10))
 			{
 				var messageText = string.Empty;
 
