@@ -1,13 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netcoreapp2.0</TargetFramework>
 		<PackageId>Noobot.Modules.IncidentManagement</PackageId>
-		<PackageVersion>1.0.10</PackageVersion>
+		<PackageVersion>1.0.11</PackageVersion>
 		<Authors>Ashley Poole</Authors>
 		<Description>Incident Management module for Noobot framework. Allows incidents to be declared and tracked using Azure storage.</Description>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageReleaseNotes>Add logging around new incidents.</PackageReleaseNotes>
+		<PackageReleaseNotes>Fix bug with incidnet being created without a title.</PackageReleaseNotes>
 		<PackageTags>Noobot Noobot.Modules Incident IncidentManagement IncidentResponse chatops chatbot bot</PackageTags>
 		<PackageProjectUrl>https://github.com/AshleyPoole/Noobot.Modules</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/AshleyPoole/Noobot.Modules</RepositoryUrl>

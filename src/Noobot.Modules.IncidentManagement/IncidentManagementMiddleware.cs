@@ -15,7 +15,7 @@ namespace Noobot.Modules.IncidentManagement
 
 		private readonly ILog log;
 
-		private readonly string newIncidentHelpText = $"`{Configuration.Prefix} new`";
+		private readonly string newIncidentHelpText = $"`{Configuration.Prefix} new The Server Is On Fire`";
 
 		private readonly string resolveIncidentHelpText = $"`{Configuration.Prefix} resolve`";
 
@@ -86,6 +86,7 @@ namespace Noobot.Modules.IncidentManagement
 			if (!this.incidentManagementPlugin.IncidentCommandUserInputWellFormatted(incomingMessage.TargetedText))
 			{
 				yield return incomingMessage.ReplyToChannel($"Please provide incident title. Help: {this.newIncidentHelpText}");
+				yield break;
 			}
 
 			var incidentText = TextHelper.GetIncidentText($"{Configuration.Prefix} new", incomingMessage.TargetedText);
@@ -118,7 +119,7 @@ namespace Noobot.Modules.IncidentManagement
 			else
 			{
 				yield return incomingMessage.ReplyToChannel(
-					$"Incident #{incident.FriendlyId} succesfully resolved. Please run {this.postmortemIncidentHelpText} followed "
+					$"Incident #{incident.FriendlyId} successfully resolved. Please run {this.postmortemIncidentHelpText} followed "
 					+ $"by the postmortem link to add the postmortem to this incident, if not already done. "
 					+ $"To create a new postmortem using the template, please go here { this.incidentManagementPlugin.PostmortemTemplateLink }.");
 			}
@@ -165,7 +166,7 @@ namespace Noobot.Modules.IncidentManagement
 			}
 			else
 			{
-				yield return incomingMessage.ReplyToChannel($"Incident #{ incident.FriendlyId } succesfully closed. Please prepare the postmortem on Jive using incident/postmortem id { incident.FriendlyId }.\n"
+				yield return incomingMessage.ReplyToChannel($"Incident #{ incident.FriendlyId } successfully closed. Please prepare the postmortem on Jive using incident/postmortem id { incident.FriendlyId }.\n"
 					+ "Channel will now be marked as available.");
 			}
 		}
