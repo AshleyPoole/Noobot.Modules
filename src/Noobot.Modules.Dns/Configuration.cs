@@ -4,7 +4,7 @@ namespace Noobot.Modules.Dns
 {
 	public class Configuration : ConfigurationBase
 	{
-		public const string CommandPrefix = "dns";
+		internal const string CommandPrefix = "dns";
 
 		public Configuration()
 		{

@@ -85,7 +85,7 @@ namespace Noobot.Modules.IncidentManagement
 
 			var title = $"INCIDENT DECLARED #{ incident.FriendlyId }";
 			this.SendWarRoomIncidentChannelMessage(incident.ChannelName, TextHelper.GetNewIncidentTextForWarRoomChannel(incident));
-			this.log.Info($"(IncidentModule) Warrom {incident.ChannelName} has been updated with incident text for incidentId:{incident.Id}");
+			this.log.Info($"(IncidentModule) Warroom {incident.ChannelName} has been updated with incident text for incidentId:{incident.Id}");
 
 			this.SendMainIncidentChannelMessage(
 				title,

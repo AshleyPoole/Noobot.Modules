@@ -4,7 +4,7 @@ namespace Noobot.Modules.LoadBalancerDotOrg
 {
 	public class Configuration : ConfigurationBase
 	{
-		public const string Prefix = "lbo";
+		internal const string Prefix = "lbo";
 
 		public Configuration()
 		{
